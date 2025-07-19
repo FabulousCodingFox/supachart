@@ -6,6 +6,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 db:
+  enabled: true
   nameOverride: ""
   fullnameOverride: ""
   serviceAccount:
