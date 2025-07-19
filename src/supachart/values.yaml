@@ -4,3 +4,14 @@
 
 nameOverride: ""
 fullnameOverride: ""
+
+db:
+  nameOverride: ""
+  fullnameOverride: ""
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+  service:
+    type: ClusterIP
+    port: 5432
