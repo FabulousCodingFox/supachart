@@ -1,0 +1,9 @@
+{
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "files.associations": {
+        "*.yaml": "helm-template",
+        "*.yml": "helm-template",
+        "values.yaml": "yaml"
+    }
+}
