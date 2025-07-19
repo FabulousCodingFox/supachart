@@ -6,11 +6,12 @@ metadata:
   labels:
     {{- include "supachart.labels" . | nindent 4 }}
 spec:
-  type: {{ .Values.db.serviceType }}
+  type: {{ .Values.db.service.type }}
   ports:
-    - name: db
-      port: {{ .Values.db.port }}
-      targetPort: {{ .Values.db.targetPort }}
+    - name: postgres
+      port: {{ .Values.db.service.port }}
+      targetPort: 5432
+      protocol: TCP
   selector:
-    app: {{ include "supachart.db.selectorLabels" . | nindent 4 }}
+    {{ include "supachart.db.selectorLabels" . | nindent 4 }}
 {{- end }}
