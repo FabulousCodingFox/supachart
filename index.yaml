@@ -1,0 +1,16 @@
+apiVersion: v1
+entries:
+  supachart:
+  - apiVersion: v2
+    appVersion: 2025.07.15
+    created: "2025-07-19T12:11:11.487868998+02:00"
+    description: Supabase is the Postgres development platform. Start your project
+      with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
+      subscriptions, Storage, and Vector embeddings.
+    digest: aab2f13ab9cb88b42af5a096fbb53fa2e7c1811dbb62891bf1b19584fed735f9
+    name: supachart
+    type: application
+    urls:
+    - https://supachart.ffuchs.dev/build/supachart-0.0.1.tgz
+    version: 0.0.1
+generated: "2025-07-19T12:11:11.487707083+02:00"
