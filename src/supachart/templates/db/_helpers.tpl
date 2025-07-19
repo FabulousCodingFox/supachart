@@ -26,7 +26,7 @@ Create the name of the service account to use
 */}}
 {{- define "supachart.db.serviceAccountName" -}}
 {{- if .Values.db.serviceAccount.enabled }}
-{{- default (include "supachart.db.fullname" .) .Values.serviceAccount.name }}
+{{- default (include "supachart.db.fullname" .) .Values.db.serviceAccount.name }}
 {{- else }}
 {{- default "default" .Values.db.serviceAccount.name }}
 {{- end }}
