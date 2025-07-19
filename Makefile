@@ -1,7 +1,7 @@
 CHART_NAME := supachart
 CHART_DIR := src/$(CHART_NAME)
 BUILD_DIR := build
-REPO_URL := https://fabulouscodingfox.github.com/supachart/build/
+REPO_URL := https://supachart.ffuchs.dev/build/
 
 .PHONY: package index release
 
