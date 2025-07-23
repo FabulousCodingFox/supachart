@@ -32,8 +32,14 @@ spec:
               name: init-scripts
             - mountPath: /docker-entrypoint-initdb.d/migrations/
               name: migrations
+            {{- if .Values.db.persistence.enabled }}
             - mountPath: /etc/postgresql-custom
-              name: db-config
+              name: db-data
+              subPath: postgresql-custom/
+            - mountPath: /var/lib/postgresql/data
+              name: db-data
+              subPath: data/
+            {{- end }}
           env:
             - name: POSTGRES_HOST
               value: /var/run/postgresql
@@ -121,7 +127,7 @@ spec:
           configMap:
             name: {{ include "supachart.db.fullname" . }}-migrations
         {{- if .Values.db.persistence.enabled }}
-        - name: db-config
+        - name: db-data
           persistentVolumeClaim:
            claimName: {{ include "supachart.db.fullname" . }}-pvc
         {{- end }}
