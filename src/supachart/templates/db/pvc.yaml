@@ -1,4 +1,3 @@
-{{- if .Values.db.enabled -}}
 {{- if .Values.db.persistence.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -25,5 +24,4 @@ spec:
     requests:
       storage: 16Mi
   storageClassName: {{ .Values.db.persistence.storageClass }}
-{{- end -}}
 {{- end -}}

@@ -27,80 +27,14 @@ spec:
           env:
             - name: STUDIO_PG_META_URL
               value: "http://{{ include "supachart.meta.fullname" . }}:{{ .Values.meta.service.port }}"
-            - name: POSTGRES_PASSWORD
-              {{- if .Values.secrets.db.password.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.password.value | quote }}
-              {{- end }}
-            
-            - name: DEFAULT_ORGANIZATION_NAME
-              {{- if .Values.secrets.studio.default_organization.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.studio.default_organization.secretKeyReference.name }}
-                  key: {{ .Values.secrets.studio.default_organization.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.studio.default_organization.value | quote }}
-              {{- end }}
-            - name: DEFAULT_PROJECT_NAME
-              {{- if .Values.secrets.studio.default_project.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.studio.default_project.secretKeyReference.name }}
-                  key: {{ .Values.secrets.studio.default_project.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.studio.default_project.value | quote }}
-              {{- end }}
-            - name: OPENAI_API_KEY
-              {{- if .Values.secrets.openai_api_key.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.openai_api_key.secretKeyReference.name }}
-                  key: {{ .Values.secrets.openai_api_key.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.openai_api_key.value | quote }}
-              {{- end }}
-
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"         "path" .Values.db.password                ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DEFAULT_ORGANIZATION_NAME" "path" .Values.studio.defaultOrganization ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DEFAULT_PROJECT_NAME"      "path" .Values.studio.defaultProject      ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "OPENAI_API_KEY"            "path" .Values.studio.openai.apiKey       ) | nindent 12 }}
             - name: SUPABASE_URL
               value: "http://{{ include "supachart.kong.fullname" . }}:{{ .Values.kong.service.port }}"
-            - name: SUPABASE_PUBLIC_URL
-              {{- if .Values.secrets.public_url.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.public_url.secretKeyReference.name }}
-                  key: {{ .Values.secrets.public_url.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.public_url.value | quote }}
-              {{- end }}
-            - name: SUPABASE_ANON_KEY
-              {{- if .Values.secrets.anon_key.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.anon_key.secretKeyReference.name }}
-                  key: {{ .Values.secrets.anon_key.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.anon_key.value | quote }}
-              {{- end }}
-            - name: SUPABASE_SERVICE_KEY
-              {{- if .Values.secrets.service_role_key.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.service_role_key.secretKeyReference.name }}
-                  key: {{ .Values.secrets.service_role_key.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.service_role_key.value | quote }}
-              {{- end }}
-            - name: AUTH_JWT_SECRET
-              {{- if .Values.secrets.jwt.secret.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.jwt.secret.secretKeyReference.name }}
-                  key: {{ .Values.secrets.jwt.secret.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.jwt.secret.value | quote }}
-              {{- end }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_PUBLIC_URL"       "path" .Values.shared.public_url          ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_ANON_KEY"         "path" .Values.shared.anon_key            ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_SERVICE_KEY"      "path" .Values.shared.service_role_key    ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "AUTH_JWT_SECRET"           "path" .Values.auth.jwt.secret            ) | nindent 12 }}
 {{- end }}

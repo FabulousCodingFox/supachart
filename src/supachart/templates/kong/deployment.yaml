@@ -55,46 +55,16 @@ spec:
             - name: kong-config
               mountPath: /config
           env:
-            - name: SUPABASE_ANON_KEY
-              {{- if .Values.secrets.anon_key.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.anon_key.secretKeyReference.name }}
-                  key: {{ .Values.secrets.anon_key.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.anon_key.value | quote }}
-              {{- end }}
-            - name: SUPABASE_SERVICE_KEY
-              {{- if .Values.secrets.service_role_key.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.service_role_key.secretKeyReference.name }}
-                  key: {{ .Values.secrets.service_role_key.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.service_role_key.value | quote }}
-              {{- end }}
-            - name: DASHBOARD_USERNAME
-              {{- if .Values.secrets.dashboard.username.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.dashboard.username.secretKeyReference.name }}
-                  key: {{ .Values.secrets.dashboard.username.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.dashboard.username.value | quote }}
-              {{- end }}
-            - name: DASHBOARD_PASSWORD
-              {{- if .Values.secrets.dashboard.password.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.dashboard.password.secretKeyReference.name }}
-                  key: {{ .Values.secrets.dashboard.password.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.dashboard.password.value | quote }}
-              {{- end }}
+            {{- include "supachart.env" (dict "name" "DASHBOARD_USERNAME"   "path" .Values.studio.dashboard.username ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DASHBOARD_PASSWORD"   "path" .Values.studio.dashboard.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_ANON_KEY"    "path" .Values.shared.anon_key           ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_SERVICE_KEY" "path" .Values.shared.service_role_key   ) | nindent 12 }}
             - name: SUPACHART_META_URL
               value: "http://{{ include "supachart.meta.fullname" . }}:{{ .Values.meta.service.port }}"
             - name: SUPACHART_STUDIO_URL
               value: "http://{{ include "supachart.studio.fullname" . }}:{{ .Values.studio.service.port }}"
+            - name: SUPACHART_AUTH_URL
+              value: "http://{{ include "supachart.auth.fullname" . }}:{{ .Values.auth.service.port }}"
       volumes:
         - name: kong-config
           emptyDir: {}

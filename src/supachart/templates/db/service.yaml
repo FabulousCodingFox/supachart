@@ -1,9 +1,8 @@
-{{- if .Values.db.enabled }}
 apiVersion: v1
 kind: Service
 metadata:
   name: {{ include "supachart.db.fullname" . }}
-  labels: {{- include "supachart.labels" . | nindent 4 }}
+  labels: {{ include "supachart.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.db.service.type }}
   ports:
@@ -12,4 +11,3 @@ spec:
       targetPort: 5432
       protocol: TCP
   selector: {{ include "supachart.db.selectorLabels" . | nindent 4 }}
-{{- end }}

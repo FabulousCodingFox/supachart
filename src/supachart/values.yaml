@@ -2,115 +2,135 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+emptySecretRef: &emptySecretRef
+  name: ""
+  key: ""
+
+# ==============================================================================
+# Shared Configuration
+# ==============================================================================
+
 nameOverride: ""
 fullnameOverride: ""
 
-secrets:
-  jwt:
-    secret:
-      value: "your-super-secret-jwt-token-with-at-least-32-characters-long"
-      secretKeyReference:
-        name: ""
-        key: ""
-    expiry:
-      value: "3600"
-      secretKeyReference:
-        name: ""
-        key: ""
+shared:
+  # Secrets
   anon_key:
     value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE"
-    secretKeyReference:
-      name: ""
-      key: ""
-  service_role_key: 
+    secretKeyReference: *emptySecretRef
+  service_role_key:
     value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJzZXJ2aWNlX3JvbGUiLAogICAgImlzcyI6ICJzdXBhYmFzZS1kZW1vIiwKICAgICJpYXQiOiAxNjQxNzY5MjAwLAogICAgImV4cCI6IDE3OTk1MzU2MDAKfQ.DaYlNEoUrrEn2Ig7tqibS-PHK5vgusbcbo7X36XVt4Q"
-    secretKeyReference:
-      name: ""
-      key: ""
-  openai_api_key:
-    value: ""
-    secretKeyReference:
-      name: ""
-      key: ""
+    secretKeyReference: *emptySecretRef
   public_url:
     value: "http://localhost:8000"
-    secretKeyReference:
-      name: ""
-      key: ""
-  dashboard:
-    username:
-      value: "supabase"
-      secretKeyReference:
-        name: ""
-        key: ""
-    password:
-      value: "this_password_is_insecure_and_should_be_updated"
-      secretKeyReference:
-        name: ""
-        key: ""
-  studio:
-    default_organization:
-      value: "Default Organization"
-      secretKeyReference:
-        name: ""
-        key: ""
-    default_project:
-      value: "Default Project"
-      secretKeyReference:
-        name: ""
-        key: ""
-  db:
-    username:
-      value: "supabase_admin"
-      secretKeyReference:
-        name: ""
-        key: ""
-    password:
-      value: "postgres"
-      secretKeyReference:
-        name: ""
-        key: ""
-    database:
-      value: "postgres"
-      secretKeyReference:
-        name: ""
-        key: ""
+    secretKeyReference: *emptySecretRef
+
+# ==============================================================================
+# Database Configuration
+# ==============================================================================
 
 db:
-  enabled: true
+  # General configuration
   nameOverride: ""
   fullnameOverride: ""
+
+  # Secrets
+  password:
+    value: "your-super-secret-and-long-postgres-password"
+    secretKeyReference: *emptySecretRef
+  username:
+    value: "supabase_admin"
+    secretKeyReference: *emptySecretRef
+  database:
+    value: "postgres"
+    secretKeyReference: *emptySecretRef
+
+  # Service Account
   serviceAccount:
     enabled: true
     name: ""
     annotations: {}
+
+  # Service
   service:
     type: ClusterIP
     port: 5432
+
+  # Deployment
   deployment:
     image: "supabase/postgres:15.8.1.060"
     imagePullPolicy: IfNotPresent
-    replicas: 1
     annotations: {}
     securityContext: {}
     command: ["/usr/local/bin/docker-entrypoint.sh"]
     args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
+
+  # Database Persistence
   persistence:
     enabled: true
     storageClass: "standard"
     size: "8Gi"
 
+# ==============================================================================
+# Auth Configuration
+# ==============================================================================
+
+auth:
+  # Secrets
+  jwt:
+    secret:
+      value: "your-super-secret-jwt-token-with-at-least-32-characters-long"
+      secretKeyReference: *emptySecretRef
+    expiry:
+      value: "3600"
+      secretKeyReference: *emptySecretRef
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 9999
+
+# ==============================================================================
+# Studio Configuration
+# ==============================================================================
+
 studio:
+  # General configuration
   enabled: true
   nameOverride: ""
   fullnameOverride: ""
+
+  # Secrets
+  dashboard:
+    username:
+      value: "supabase"
+      secretKeyReference: *emptySecretRef
+    password:
+      value: "this_password_is_insecure_and_should_be_updated"
+      secretKeyReference: *emptySecretRef
+  defaultOrganization:
+    value: "Default Organization"
+    secretKeyReference: *emptySecretRef
+  defaultProject:
+    value: "Default Project"
+    secretKeyReference: *emptySecretRef
+  openai:
+    apiKey:
+      value: ""
+      secretKeyReference: *emptySecretRef
+
+  # Service Account
   serviceAccount:
     enabled: true
     name: ""
     annotations: {}
+
+  # Service
   service:
     type: ClusterIP
     port: 3000
+  
+  # Deployment
   deployment:
     image: "supabase/studio:2025.06.30-sha-6f5982d"
     imagePullPolicy: IfNotPresent
@@ -118,17 +138,28 @@ studio:
     annotations: {}
     securityContext: {}
 
+# ==============================================================================
+# Pg-Meta Configuration
+# ==============================================================================
+
 meta:
+  # General configuration
   enabled: true
   nameOverride: ""
   fullnameOverride: ""
+
+  # Service Account
   serviceAccount:
     enabled: true
     name: ""
     annotations: {}
+
+  # Service
   service:
     type: ClusterIP
     port: 8080
+
+  # Deployment
   deployment:
     image: "supabase/postgres-meta:v0.91.0"
     imagePullPolicy: IfNotPresent
@@ -136,20 +167,32 @@ meta:
     annotations: {}
     securityContext: {}
 
+# ==============================================================================
+# Kong Configuration
+# ==============================================================================
+
 kong:
+  # General configuration
   enabled: true
   nameOverride: ""
   fullnameOverride: ""
+
+  # Service Account
   serviceAccount:
     enabled: true
     name: ""
     annotations: {}
+
+  # Service
   service:
     type: ClusterIP
     port: 8000
+
+  # Deployment
   deployment:
     image: "kong:2.8.1"
     imagePullPolicy: IfNotPresent
     replicas: 1
     annotations: {}
     securityContext: {}
+

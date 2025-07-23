@@ -44,7 +44,7 @@ data:
     services:
       ## Open Auth routes
       - name: auth-v1-open
-        url: http://auth:9999/verify
+        url: $SUPACHART_AUTH_URL/verify
         routes:
           - name: auth-v1-open
             strip_path: true
@@ -53,7 +53,7 @@ data:
         plugins:
           - name: cors
       - name: auth-v1-open-callback
-        url: http://auth:9999/callback
+        url: $SUPACHART_AUTH_URL/callback
         routes:
           - name: auth-v1-open-callback
             strip_path: true
@@ -62,7 +62,7 @@ data:
         plugins:
           - name: cors
       - name: auth-v1-open-authorize
-        url: http://auth:9999/authorize
+        url: $SUPACHART_AUTH_URL/authorize
         routes:
           - name: auth-v1-open-authorize
             strip_path: true
@@ -73,8 +73,8 @@ data:
 
       ## Secure Auth routes
       - name: auth-v1
-        _comment: 'GoTrue: /auth/v1/* -> http://auth:9999/*'
-        url: http://auth:9999/
+        _comment: 'GoTrue: /auth/v1/* -> $SUPACHART_AUTH_URL/*'
+        url: $SUPACHART_AUTH_URL/
         routes:
           - name: auth-v1-all
             strip_path: true

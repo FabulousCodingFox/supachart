@@ -49,3 +49,18 @@ app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
 {{- end }}
 app.kubernetes.io/managed-by: {{ .Release.Service }}
 {{- end }}
+
+{{/*
+Secrets helper
+*/}}
+{{- define "supachart.env" -}}
+- name: {{ .name }}
+{{- if .path.secretKeyReference.name }}
+  valueFrom:
+    secretKeyRef:
+      name: {{ .path.secretKeyReference.name }}
+      key: {{ .path.secretKeyReference.key }}
+{{- else }}
+  value: {{ .path.value | quote }}
+{{- end }}
+{{- end }}

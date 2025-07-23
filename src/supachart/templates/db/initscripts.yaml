@@ -1,4 +1,3 @@
-{{- if .Values.db.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -264,4 +263,3 @@ data:
 
     ALTER DATABASE postgres SET "app.settings.jwt_secret" TO :'jwt_secret';
     ALTER DATABASE postgres SET "app.settings.jwt_exp" TO :'jwt_exp';
-{{- end }}

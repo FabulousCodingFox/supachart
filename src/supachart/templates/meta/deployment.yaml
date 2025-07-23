@@ -31,31 +31,7 @@ spec:
               value: {{ include "supachart.db.fullname" . | quote }}
             - name: PG_META_DB_PORT
               value: {{ .Values.db.service.port | quote }}
-            - name: POSTGRES_DB
-              {{- if .Values.secrets.db.database.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.database.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.database.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.database.value | quote }}
-              {{- end }}
-            - name: PG_META_DB_USER
-              {{- if .Values.secrets.db.username.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.username.value | quote }}
-              {{- end }}
-            - name: PG_META_DB_PASSWORD
-              {{- if .Values.secrets.db.password.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.password.value | quote }}
-              {{- end }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"         "path" .Values.db.database ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PG_META_DB_USER"     "path" .Values.db.username ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PG_META_DB_PASSWORD" "path" .Values.db.password ) | nindent 12 }}
 {{- end }}

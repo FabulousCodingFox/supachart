@@ -5,7 +5,7 @@ metadata:
   name: {{ include "supachart.db.fullname" . }}
   labels: {{- include "supachart.labels" . | nindent 4 }}
 spec:
-  replicas: {{ .Values.db.deployment.replicas }}
+  replicas: 1 # There is no scaling support for the database, it should always run as a single instance
   selector:
     matchLabels: {{ include "supachart.db.selectorLabels" . | nindent 6 }}
   template:
@@ -69,78 +69,14 @@ spec:
               value: "5432"
             - name: POSTGRES_PORT
               value: "5432"
-            - name: PGPASSWORD
-              {{- if .Values.secrets.db.password.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.password.value | quote }}
-              {{- end }}
-            - name: POSTGRES_PASSWORD
-              {{- if .Values.secrets.db.password.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.password.value | quote }}
-              {{- end }}
-            - name: PGUSER
-              {{- if .Values.secrets.db.username.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.username.value | quote }}
-              {{- end }}
-            - name: POSTGRES_USER
-              {{- if .Values.secrets.db.username.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.username.value | quote }}
-              {{- end }}
-            - name: PGDATABASE
-              {{- if .Values.secrets.db.database.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.database.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.database.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.database.value | quote }}
-              {{- end }}
-            - name: POSTGRES_DB
-              {{- if .Values.secrets.db.database.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.db.database.secretKeyReference.name }}
-                  key: {{ .Values.secrets.db.database.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.db.database.value | quote }}
-              {{- end }}
-            - name: JWT_SECRET
-              {{- if .Values.secrets.jwt.secret.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.jwt.secret.secretKeyReference.name }}
-                  key: {{ .Values.secrets.jwt.secret.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.jwt.secret.value | quote }}
-              {{- end }}
-            - name: JWT_EXP
-              {{- if .Values.secrets.jwt.expiry.secretKeyReference.name }}
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.secrets.jwt.expiry.secretKeyReference.name }}
-                  key: {{ .Values.secrets.jwt.expiry.secretKeyReference.key }}
-              {{- else }}
-              value: {{ .Values.secrets.jwt.expiry.value | quote }}
-              {{- end }} 
+            {{- include "supachart.env" (dict "name" "PGPASSWORD"        "path" .Values.db.password     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PGUSER"            "path" .Values.db.username     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_USER"     "path" .Values.db.username     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PGDATABASE"        "path" .Values.db.database     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "JWT_SECRET"        "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "JWT_EXP"           "path" .Values.auth.jwt.expiry ) | nindent 12 }}
       volumes:
         - name: init-scripts
           configMap:
