@@ -44,7 +44,9 @@ spec:
           ports:
             - containerPort: 5432
               name: postgres
-          securityContext: {{- toYaml .Values.db.deployment.containerSecurityContext | nindent 12 }}
+          securityContext:
+            runAsUser: 105
+            runAsGroup: 106
           command: {{- toYaml .Values.db.deployment.command | nindent 12 }}
           args: {{- toYaml .Values.db.deployment.args | nindent 12 }}
           volumeMounts:
