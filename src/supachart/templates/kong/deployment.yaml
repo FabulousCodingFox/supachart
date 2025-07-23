@@ -26,7 +26,7 @@ spec:
               name: http
           volumeMounts:
             - name: kong-config
-              mountPath: /home/kong/kong.yml
+              mountPath: /etc/kong/kong.yml
               subPath: kong.yml
           env:
             - name: KONG_DATABASE
@@ -44,11 +44,11 @@ spec:
       initContainers:
         - name: generate-kong-config
           image: bash:5
-          command: ["/bin/bash", "-c"]
+          command: ["/usr/local/bin/bash", "-c"]
           args:
             - |
               apk add --no-cache gettext && \
-              envsubst < /template/temp.yml > /config/kong.yml
+              envsubst < /template/kong.yml > /config/kong.yml
           volumeMounts:
             - name: kong-template
               mountPath: /template
