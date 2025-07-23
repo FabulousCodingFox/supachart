@@ -24,6 +24,12 @@ shared:
   public_url:
     value: "http://localhost:8000"
     secretKeyReference: *emptySecretRef
+  site_url:
+    value: "http://localhost:3000"
+    secretKeyReference: *emptySecretRef
+  additional_redirect_urls:
+    value: ""
+    secretKeyReference: *emptySecretRef
 
 # ==============================================================================
 # Database Configuration
@@ -76,6 +82,11 @@ db:
 # ==============================================================================
 
 auth:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
   # Secrets
   jwt:
     secret:
@@ -84,11 +95,76 @@ auth:
     expiry:
       value: "3600"
       secretKeyReference: *emptySecretRef
+  settings:
+    disable_signup:
+      value: "false"
+      secretKeyReference: *emptySecretRef
+    enable_email_signup: 
+      value: "true"
+      secretKeyReference: *emptySecretRef
+    enable_phone_signup: 
+      value: "true"
+      secretKeyReference: *emptySecretRef
+    enable_sms_autoconfirm: 
+      value: "true"
+      secretKeyReference: *emptySecretRef
+    enable_anonymous_users:
+      value: "false"
+      secretKeyReference: *emptySecretRef
+    enable_email_autoconfirm: 
+      value: "true"
+      secretKeyReference: *emptySecretRef
+    email:
+      admin_email:
+        value: "admin@example.com"
+        secretKeyReference: *emptySecretRef
+      host: 
+        value: "supabase-mail"
+        secretKeyReference: *emptySecretRef
+      port:
+        value: "2500"
+        secretKeyReference: *emptySecretRef
+      user:
+        value: "fake_mail_user"
+        secretKeyReference: *emptySecretRef
+      password:
+        value: "fake_mail_password"
+        secretKeyReference: *emptySecretRef
+      sender_name:
+        value: "fake_sender"
+        secretKeyReference: *emptySecretRef
+    mailer:
+      urlpaths:
+        invite:
+          value: "/auth/v1/verify"
+          secretKeyReference: *emptySecretRef
+        confirmation:
+          value: "/auth/v1/verify"
+          secretKeyReference: *emptySecretRef
+        recovery:
+          value: "/auth/v1/verify"
+          secretKeyReference: *emptySecretRef
+        email_change:
+          value: "/auth/v1/verify"
+          secretKeyReference: *emptySecretRef
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
 
   # Service
   service:
     type: ClusterIP
     port: 9999
+  
+  # Deployment
+  deployment:
+    image: "supabase/gotrue:v2.177.0"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
 
 # ==============================================================================
 # Studio Configuration
