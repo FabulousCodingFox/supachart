@@ -36,7 +36,7 @@ data:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "supachart.db.fullname" . }}-initdb
+  name: {{ include "supachart.db.fullname" . }}-init-scripts
   labels:
     {{- include "supachart.labels" . | nindent 4 }}
 data:
