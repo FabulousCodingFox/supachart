@@ -62,3 +62,7 @@ db:
     enabled: true
     storageClass: "standard"
     size: "8Gi"
+  containerSecurityContext:
+    # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd | grep postgres
+    runAsUser: 105
+    runAsGroup: 106
