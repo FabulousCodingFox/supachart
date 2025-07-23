@@ -1,0 +1,106 @@
+{{- if .Values.studio.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.studio.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.studio.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.studio.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.studio.deployment.annotations | nindent 8 }}
+    spec:
+       {{- if .Values.studio.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.studio.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.studio.deployment.securityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.studio.name" . }}
+          image: {{ .Values.studio.deployment.image }}
+          imagePullPolicy: {{ .Values.studio.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: STUDIO_PG_META_URL
+              value: "http://{{ include "supachart.meta.fullname" . }}:{{ .Values.meta.service.port }}"
+            - name: POSTGRES_PASSWORD
+              {{- if .Values.secrets.db.password.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.password.value | quote }}
+              {{- end }}
+            
+            - name: DEFAULT_ORGANIZATION_NAME
+              {{- if .Values.secrets.studio.default_organization.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.studio.default_organization.secretKeyReference.name }}
+                  key: {{ .Values.secrets.studio.default_organization.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.studio.default_organization.value | quote }}
+              {{- end }}
+            - name: DEFAULT_PROJECT_NAME
+              {{- if .Values.secrets.studio.default_project.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.studio.default_project.secretKeyReference.name }}
+                  key: {{ .Values.secrets.studio.default_project.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.studio.default_project.value | quote }}
+              {{- end }}
+            - name: OPENAI_API_KEY
+              {{- if .Values.secrets.openai_api_key.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.openai_api_key.secretKeyReference.name }}
+                  key: {{ .Values.secrets.openai_api_key.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.openai_api_key.value | quote }}
+              {{- end }}
+
+            - name: SUPABASE_URL
+              value: "http://{{ include "supachart.kong.fullname" . }}:{{ .Values.kong.service.port }}"
+            - name: SUPABASE_PUBLIC_URL
+              {{- if .Values.secrets.public_url.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.public_url.secretKeyReference.name }}
+                  key: {{ .Values.secrets.public_url.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.public_url.value | quote }}
+              {{- end }}
+            - name: SUPABASE_ANON_KEY
+              {{- if .Values.secrets.anon_key.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.anon_key.secretKeyReference.name }}
+                  key: {{ .Values.secrets.anon_key.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.anon_key.value | quote }}
+              {{- end }}
+            - name: SUPABASE_SERVICE_KEY
+              {{- if .Values.secrets.service_role_key.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.service_role_key.secretKeyReference.name }}
+                  key: {{ .Values.secrets.service_role_key.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.service_role_key.value | quote }}
+              {{- end }}
+            - name: AUTH_JWT_SECRET
+              {{- if .Values.secrets.jwt.secret.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.jwt.secret.secretKeyReference.name }}
+                  key: {{ .Values.secrets.jwt.secret.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.jwt.secret.value | quote }}
+              {{- end }}
+{{- end }}

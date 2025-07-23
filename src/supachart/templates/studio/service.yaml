@@ -1,0 +1,15 @@
+{{- if .Values.studio.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.studio.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.studio.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.studio.service.port }}
+      targetPort: 3000
+      protocol: TCP
+  selector: {{ include "supachart.studio.selectorLabels" . | nindent 4 }}
+{{- end }}
