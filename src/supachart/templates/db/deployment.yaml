@@ -30,8 +30,7 @@ spec:
                 fi
           volumeMounts:
             - mountPath: /mnt/postgresql-custom
-              name: db-data
-              subPath: postgresql-custom/
+              name: db-config
       {{- end }}
       containers:
         - name: {{ include "supachart.db.name" . }}
@@ -50,11 +49,9 @@ spec:
               name: migrations
             {{- if .Values.db.persistence.enabled }}
             - mountPath: /etc/postgresql-custom
-              name: db-data
-              subPath: postgresql-custom/
+              name: db-config
             - mountPath: /var/lib/postgresql/data
               name: db-data
-              subPath: data/
             {{- end }}
           env:
             - name: POSTGRES_HOST
@@ -145,6 +142,9 @@ spec:
         {{- if .Values.db.persistence.enabled }}
         - name: db-data
           persistentVolumeClaim:
-           claimName: {{ include "supachart.db.fullname" . }}-pvc
+           claimName: {{ include "supachart.db.fullname" . }}-data
+        - name: db-config
+          persistentVolumeClaim:
+            claimName: {{ include "supachart.db.fullname" . }}-config
         {{- end }}
 {{- end }}
