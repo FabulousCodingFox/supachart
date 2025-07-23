@@ -17,6 +17,22 @@ spec:
       serviceAccountName: {{ include "supachart.db.serviceAccountName" . }}
       {{- end }}
       securityContext: {{- toYaml .Values.db.deployment.securityContext | nindent 8 }}
+      {{- if .Values.db.persistence.enabled }}
+      initContainers:
+        - name: copy-defaults
+          image: {{ .Values.db.deployment.image }}
+          imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
+          command: ["/bin/sh", "-c"]
+          args:
+              - |
+                if [ -z "$(ls -A /mnt/postgresql-custom)" ]; then
+                  cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
+                fi
+          volumeMounts:
+            - mountPath: /mnt/postgresql-custom
+              name: db-data
+              subPath: postgresql-custom/
+      {{- end }}
       containers:
         - name: {{ include "supachart.db.name" . }}
           image: {{ .Values.db.deployment.image }}
