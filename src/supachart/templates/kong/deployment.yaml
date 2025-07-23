@@ -91,6 +91,10 @@ spec:
               {{- else }}
               value: {{ .Values.secrets.dashboard.password.value | quote }}
               {{- end }}
+            - name: SUPACHART_META_URL
+              value: "http://{{ include "supachart.meta.fullname" . }}:{{ .Values.meta.service.port }}"
+            - name: SUPACHART_STUDIO_URL
+              value: "http://{{ include "supachart.studio.fullname" . }}:{{ .Values.studio.service.port }}"
       volumes:
         - name: kong-config
           emptyDir: {}

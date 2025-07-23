@@ -216,8 +216,8 @@ data:
 
       ## Secure Database routes
       - name: meta
-        _comment: 'pg-meta: /pg/* -> http://pg-meta:8080/*'
-        url: http://meta:8080/
+        _comment: 'pg-meta: /pg/* -> $SUPACHART_META_URL/*'
+        url: $SUPACHART_META_URL/
         routes:
           - name: meta-all
             strip_path: true
@@ -235,8 +235,8 @@ data:
 
       ## Protected Dashboard - catch all remaining routes
       - name: dashboard
-        _comment: 'Studio: /* -> http://studio:3000/*'
-        url: http://studio:3000/
+        _comment: 'Studio: /* -> $SUPACHART_STUDIO_URL/*'
+        url: $SUPACHART_STUDIO_URL/
         routes:
           - name: dashboard-all
             strip_path: true
