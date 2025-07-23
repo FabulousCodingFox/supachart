@@ -1,0 +1,100 @@
+{{- if .Values.kong.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.kong.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.kong.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.kong.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.kong.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.kong.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.kong.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.kong.deployment.securityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.kong.name" . }}
+          image: {{ .Values.kong.deployment.image }}
+          imagePullPolicy: {{ .Values.kong.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 8000
+              name: http
+          volumeMounts:
+            - name: kong-config
+              mountPath: /home/kong/kong.yml
+              subPath: kong.yml
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: "/etc/kong/kong.yml"
+            - name: KONG_DNS_ORDER
+              value: "LAST,A,CNAME"
+            - name: KONG_PLUGINS
+              value: "request-transformer,cors,key-auth,acl,basic-auth"
+            - name: KONG_NGINX_PROXY_PROXY_BUFFER_SIZE
+              value: "160k"
+            - name: KONG_NGINX_PROXY_PROXY_BUFFERS
+              value: "64 160k"
+      initContainers:
+        - name: generate-kong-config
+          image: bash:5
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              apk add --no-cache gettext && \
+              envsubst < /template/temp.yml > /config/kong.yml
+          volumeMounts:
+            - name: kong-template
+              mountPath: /template
+            - name: kong-config
+              mountPath: /config
+          env:
+            - name: SUPABASE_ANON_KEY
+              {{- if .Values.secrets.anon_key.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.anon_key.secretKeyReference.name }}
+                  key: {{ .Values.secrets.anon_key.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.anon_key.value | quote }}
+              {{- end }}
+            - name: SUPABASE_SERVICE_KEY
+              {{- if .Values.secrets.service_role_key.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.service_role_key.secretKeyReference.name }}
+                  key: {{ .Values.secrets.service_role_key.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.service_role_key.value | quote }}
+              {{- end }}
+            - name: DASHBOARD_USERNAME
+              {{- if .Values.secrets.dashboard.username.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.dashboard.username.secretKeyReference.name }}
+                  key: {{ .Values.secrets.dashboard.username.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.dashboard.username.value | quote }}
+              {{- end }}
+            - name: DASHBOARD_PASSWORD
+              {{- if .Values.secrets.dashboard.password.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.dashboard.password.secretKeyReference.name }}
+                  key: {{ .Values.secrets.dashboard.password.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.dashboard.password.value | quote }}
+              {{- end }}
+      volumes:
+        - name: kong-config
+          emptyDir: {}
+        - name: kong-template
+          configMap:
+            name: {{ include "supachart.kong.fullname" . }}-config
+{{- end }}
