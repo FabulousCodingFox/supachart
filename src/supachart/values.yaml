@@ -58,11 +58,10 @@ db:
     securityContext: {}
     command: ["postgres"]
     args: ["-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
+    containerSecurityContext:
+      runAsUser: 105 # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd | grep postgres
+      runAsGroup: 106
   persistence:
     enabled: true
     storageClass: "standard"
     size: "8Gi"
-  containerSecurityContext:
-    # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd | grep postgres
-    runAsUser: 105
-    runAsGroup: 106
