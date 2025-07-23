@@ -25,7 +25,7 @@ spec:
           command: ["/bin/sh", "-c"]
           args:
               - |
-                if [ -z "$(ls -A /mnt/postgresql-custom)" ]; then
+                if [ ! -f /mnt/postgresql-custom/supautils.conf ]; then
                   cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
                 fi
           volumeMounts:
