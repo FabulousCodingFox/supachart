@@ -1,0 +1,127 @@
+{{- if .Values.db.enabled }}
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.db.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.db.deployment.replicas }}
+  selector:
+    matchLabels: {{ include "supachart.db.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.db.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.db.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.db.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.db.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.db.deployment.securityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.db.name" . }}
+          image: {{ .Values.db.deployment.image }}
+          imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 5432
+              name: postgres
+          command: {{- toYaml .Values.db.deployment.command | nindent 12 }}
+          args: {{- toYaml .Values.db.deployment.args | nindent 12 }}
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d/init-scripts/
+              name: init-scripts
+            - mountPath: /docker-entrypoint-initdb.d/migrations/
+              name: migrations
+            - mountPath: /etc/postgresql-custom
+              name: db-config
+          env:
+            - name: POSTGRES_HOST
+              value: /var/run/postgresql
+            - name: PGPORT
+              value: "5432"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: PGPASSWORD
+              {{- if .Values.secrets.db.password.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.password.value | quote }}
+              {{- end }}
+            - name: POSTGRES_PASSWORD
+              {{- if .Values.secrets.db.password.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.password.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.password.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.password.value | quote }}
+              {{- end }}
+            - name: PGUSER
+              {{- if .Values.secrets.db.username.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.username.value | quote }}
+              {{- end }}
+            - name: POSTGRES_USER
+              {{- if .Values.secrets.db.username.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.username.value | quote }}
+              {{- end }}
+            - name: PGDATABASE
+              {{- if .Values.secrets.db.database.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.database.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.database.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.database.value | quote }}
+              {{- end }}
+            - name: POSTGRES_DB
+              {{- if .Values.secrets.db.database.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.database.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.database.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.database.value | quote }}
+              {{- end }}
+            - name: JWT_SECRET
+              {{- if .Values.secrets.jwt.secret.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.jwt.secret.secretKeyReference.name }}
+                  key: {{ .Values.secrets.jwt.secret.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.jwt.secret.value | quote }}
+              {{- end }}
+            - name: JWT_EXP
+              {{- if .Values.secrets.jwt.expiry.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.jwt.expiry.secretKeyReference.name }}
+                  key: {{ .Values.secrets.jwt.expiry.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.jwt.expiry.value | quote }}
+              {{- end }} 
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: {{ include "supachart.db.fullname" . }}-init-scripts
+        - name: migrations
+          configMap:
+            name: {{ include "supachart.db.fullname" . }}-migrations
+        {{- if .Values.db.persistence.enabled }}
+        - name: db-config
+          persistentVolumeClaim:
+           claimName: {{ include "supachart.db.fullname" . }}-pvc
+        {{- end }}
+{{- end }}

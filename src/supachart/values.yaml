@@ -5,6 +5,40 @@
 nameOverride: ""
 fullnameOverride: ""
 
+secrets:
+  jwt:
+    secret:
+      value: "your-super-secret-jwt-token-with-at-least-32-characters-long"
+      secretKeyReference:
+        name: ""
+        key: ""
+    expiry:
+      value: "3600"
+      secretKeyReference:
+        name: ""
+        key: ""
+  anon_key:
+    value: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE"
+    secretKeyReference:
+      name: ""
+      key: ""
+  db:
+    username:
+      value: "postgres"
+      secretKeyReference:
+        name: ""
+        key: ""
+    password:
+      value: "postgres"
+      secretKeyReference:
+        name: ""
+        key: ""
+    database:
+      value: "postgres"
+      secretKeyReference:
+        name: ""
+        key: ""
+
 db:
   enabled: true
   nameOverride: ""
@@ -16,3 +50,15 @@ db:
   service:
     type: ClusterIP
     port: 5432
+  deployment:
+    image: "supabase/postgres:15.8.1.060"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+    command: ["postgres"]
+    args: ["-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
+  persistence:
+    enabled: true
+    storageClass: "standard"
+    size: "8Gi"
