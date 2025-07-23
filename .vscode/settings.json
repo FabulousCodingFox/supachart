@@ -1,6 +1,6 @@
 {
     "editor.tabSize": 2,
-    "editor.formatOnSave": true,
+    "editor.formatOnSave": false,
     "files.associations": {
         "*.yaml": "helm",
         "*.yml": "helm",
