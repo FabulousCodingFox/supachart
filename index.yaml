@@ -3,11 +3,11 @@ entries:
   supachart:
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.066229601+02:00"
+    created: "2025-07-23T16:02:14.204751157+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
-    digest: 3d2d47a91fe44cbcaac7611413d890e465836b245b3fc488b8445c35e5eedaa2
+    digest: c57a898e0f53bfa9d3327fcf60c5fa1079875ed91f245440273ed8885ac67c82
     name: supachart
     type: application
     urls:
@@ -15,7 +15,7 @@ entries:
     version: 0.0.11
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.065868511+02:00"
+    created: "2025-07-23T16:02:14.20442925+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -27,7 +27,7 @@ entries:
     version: 0.0.10
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.068162704+02:00"
+    created: "2025-07-23T16:02:14.206535337+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -39,7 +39,7 @@ entries:
     version: 0.0.9
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.067838734+02:00"
+    created: "2025-07-23T16:02:14.206196699+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -51,7 +51,7 @@ entries:
     version: 0.0.8
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.067678402+02:00"
+    created: "2025-07-23T16:02:14.205927612+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -63,7 +63,7 @@ entries:
     version: 0.0.7
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.067504364+02:00"
+    created: "2025-07-23T16:02:14.205600176+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -75,7 +75,7 @@ entries:
     version: 0.0.6
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.06732208+02:00"
+    created: "2025-07-23T16:02:14.205377907+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -87,7 +87,7 @@ entries:
     version: 0.0.5
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.067147671+02:00"
+    created: "2025-07-23T16:02:14.205229447+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -99,7 +99,7 @@ entries:
     version: 0.0.4
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.066912999+02:00"
+    created: "2025-07-23T16:02:14.205075137+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -111,7 +111,7 @@ entries:
     version: 0.0.3
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.066399+02:00"
+    created: "2025-07-23T16:02:14.204911098+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -123,7 +123,7 @@ entries:
     version: 0.0.2
   - apiVersion: v2
     appVersion: 2025.07.15
-    created: "2025-07-23T15:58:46.065539541+02:00"
+    created: "2025-07-23T16:02:14.204085793+02:00"
     description: Supabase is the Postgres development platform. Start your project
       with a Postgres database, Authentication, instant APIs, Edge Functions, Realtime
       subscriptions, Storage, and Vector embeddings.
@@ -133,4 +133,4 @@ entries:
     urls:
     - https://supachart.ffuchs.dev/build/supachart-0.0.1.tgz
     version: 0.0.1
-generated: "2025-07-23T15:58:46.06537498+02:00"
+generated: "2025-07-23T16:02:14.203925932+02:00"
