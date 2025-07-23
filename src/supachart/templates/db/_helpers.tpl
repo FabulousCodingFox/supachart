@@ -10,14 +10,9 @@ Create a default fully qualified database name.
 */}}
 {{- define "supachart.db.fullname" -}}
 {{- if .Values.db.fullnameOverride }}
-{{- .Values.db.fullnameOverride | trunc 63 | trimSuffix "-" }}
+  {{- .Values.db.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
-{{- $name := default (print .Chart.Name "-db") .Values.db.nameOverride }}
-{{- if contains $name .Release.Name }}
-{{- .Release.Name | trunc 63 | trimSuffix "-" }}
-{{- else }}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
-{{- end }}
+  {{- printf "%s-%s" (include "supachart.fullname" .) (.Values.db.nameOverride | default "db") | trunc 63 | trimSuffix "-" }}
 {{- end }}
 {{- end }}
 
