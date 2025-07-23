@@ -28,9 +28,14 @@ spec:
                 if [ ! -f /mnt/postgresql-custom/supautils.conf ]; then
                   cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
                 fi
+                chown -R 105:106 /mnt/postgresql-data
+                chmod 750 /mnt/postgresql-data
           volumeMounts:
             - mountPath: /mnt/postgresql-custom
               name: db-config
+            - mountPath: /mnt/postgresql-data
+              name: db-data
+              subPath: postgresql-data/
       {{- end }}
       containers:
         - name: {{ include "supachart.db.name" . }}
@@ -52,6 +57,8 @@ spec:
               name: db-config
             - mountPath: /var/lib/postgresql/data
               name: db-data
+              # For compatibility with ext4 lost+found
+              subPath: postgresql-data/
             {{- end }}
           env:
             - name: POSTGRES_HOST
