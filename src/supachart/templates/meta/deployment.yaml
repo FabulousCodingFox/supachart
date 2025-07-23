@@ -41,7 +41,14 @@ spec:
               value: {{ .Values.secrets.db.database.value | quote }}
               {{- end }}
             - name: PG_META_DB_USER
-              value: "supabase_admin"
+              {{- if .Values.secrets.db.username.secretKeyReference.name }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.secrets.db.username.secretKeyReference.name }}
+                  key: {{ .Values.secrets.db.username.secretKeyReference.key }}
+              {{- else }}
+              value: {{ .Values.secrets.db.username.value | quote }}
+              {{- end }}
             - name: PG_META_DB_PASSWORD
               {{- if .Values.secrets.db.password.secretKeyReference.name }}
               valueFrom:

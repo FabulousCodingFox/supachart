@@ -61,7 +61,7 @@ secrets:
         key: ""
   db:
     username:
-      value: "postgres"
+      value: "supabase_admin"
       secretKeyReference:
         name: ""
         key: ""
