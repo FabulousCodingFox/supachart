@@ -18,15 +18,23 @@ spec:
       securityContext: {{- toYaml .Values.db.deployment.securityContext | nindent 8 }}
       {{- if .Values.db.persistence.enabled }}
       initContainers:
-        - name: copy-defaults
+        - name: docker-compatibility
           image: {{ .Values.db.deployment.image }}
           imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
               - |
+                # Copy pgsodium stuff if it doesnt exists yet (Don't overwrite existing files)
                 if [ ! -f /mnt/postgresql-custom/supautils.conf ]; then
                   cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
                 fi
+
+                # Merge initdb migrations and scripts
+                cp -a /docker-entrypoint-initdb.d/. /mnt/initdb-overwrite/
+                cp -r /mnt/init-scripts/* /mnt/initdb-overwrite/init-scripts/
+                cp -r /mnt/migrations/* /mnt/initdb-overwrite/migrations/
+
+                # Ensure the data directory has the correct permissions
                 chown -R 105:106 /mnt/postgresql-data
                 chmod 750 /mnt/postgresql-data
           volumeMounts:
@@ -35,6 +43,12 @@ spec:
             - mountPath: /mnt/postgresql-data
               name: db-data
               subPath: postgresql-data/
+            - mountPath: /mnt/init-scripts
+              name: init-scripts
+            - mountPath: /mnt/migrations
+              name: migrations
+            - mountPath: /mnt/initdb-overwrite
+              name: initdb-overwrite
       {{- end }}
       containers:
         - name: {{ include "supachart.db.name" . }}
@@ -44,15 +58,14 @@ spec:
             - containerPort: 5432
               name: postgres
           securityContext:
+            # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd
             runAsUser: 105
             runAsGroup: 106
           command: {{- toYaml .Values.db.deployment.command | nindent 12 }}
           args: {{- toYaml .Values.db.deployment.args | nindent 12 }}
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d/init-scripts/
-              name: init-scripts
-            - mountPath: /docker-entrypoint-initdb.d/migrations/
-              name: migrations
+            - mountPath: /docker-entrypoint-initdb.d
+              name: initdb-overwrite
             {{- if .Values.db.persistence.enabled }}
             - mountPath: /etc/postgresql-custom
               name: db-config
@@ -77,6 +90,8 @@ spec:
             {{- include "supachart.env" (dict "name" "JWT_SECRET"        "path" .Values.auth.jwt.secret ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "JWT_EXP"           "path" .Values.auth.jwt.expiry ) | nindent 12 }}
       volumes:
+        - name: initdb-overwrite
+          emptyDir: {}
         - name: init-scripts
           configMap:
             name: {{ include "supachart.db.fullname" . }}-init-scripts
