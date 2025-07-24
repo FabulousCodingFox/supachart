@@ -1,0 +1,44 @@
+{{- if .Values.functions.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.functions.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.functions.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.functions.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.functions.deployment.annotations | nindent 8 }}
+    spec:
+       {{- if .Values.functions.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.functions.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.functions.deployment.securityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.functions.name" . }}
+          image: {{ .Values.functions.deployment.image }}
+          imagePullPolicy: {{ .Values.functions.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 9000
+              name: http
+          env:
+            {{- include "supachart.env" (dict "name" "JWT_SECRET"                "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            - name: SUPABASE_URL
+              value: "http://{{ include "supachart.kong.fullname" . }}:{{ .Values.kong.service.port }}"
+            {{- include "supachart.env" (dict "name" "SUPABASE_ANON_KEY"         "path" .Values.shared.anon_key ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SUPABASE_SERVICE_ROLE_KEY" "path" .Values.shared.service_role_key ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "VERIFY_JWT" "path" .Values.functions.verify_jwt ) | nindent 12 }}
+
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"         "path" .Values.db.password ) | nindent 12 }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.db.service.port | quote }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"               "path" .Values.db.database ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_USER"             "path" .Values.db.username ) | nindent 12 }}
+            - name: POSTGRES_HOST
+              value: {{ include "supachart.db.fullname" . | quote }}
+            - name: SUPABASE_DB_URL
+              value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+{{- end }}
