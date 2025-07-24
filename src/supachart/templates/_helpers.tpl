@@ -64,3 +64,27 @@ Secrets helper
   value: {{ .path.value | quote }}
 {{- end }}
 {{- end }}
+
+{{/*
+Wait for db initcontainer
+*/}}
+{{- define "supachart.waitForDbInitContainer" }}
+- name: wait-for-db
+  image: {{ .Values.db.deployment.image }}
+  imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
+  command:
+    - /bin/sh
+    - -c
+  args:
+    - |
+      until pg_isready -h $(POSTGRES_HOST) -p $(POSTGRES_PORT) -U $(POSTGRES_USER); do
+        echo "Waiting for connection to database..."
+        sleep 2
+      done
+  env:
+    {{- include "supachart.env" (dict "name" "POSTGRES_USER" "path" .Values.db.username ) | nindent 4 }}
+    - name: POSTGRES_PORT
+      value: {{ .Values.db.service.port | quote }}
+    - name: POSTGRES_HOST
+      value: {{ include "supachart.db.fullname" . | quote }}
+{{- end }}
