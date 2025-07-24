@@ -25,15 +25,20 @@ spec:
             - containerPort: 9999
               name: http
           env:
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"                       "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PORT"                           "path" .Values.db.service.port ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"                             "path" .Values.db.database ) | nindent 12 }}
+            - name: POSTGRES_HOST
+              value: {{ include "supachart.db.fullname" . }}
             - name: GOTRUE_API_HOST
               value: "0.0.0.0"
             - name: GOTRUE_API_PORT
               value: "9999"
-            {{- include "supachart.env" (dict "name" "API_EXTERNAL_URL" "path" .Values.shared.public_url ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "API_EXTERNAL_URL"                        "path" .Values.shared.public_url ) | nindent 12 }}
             - name: GOTRUE_DB_DRIVER
               value: "postgres"
             - name: GOTRUE_DB_DATABASE_URL
-              value: "postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DB}"
+              value: "postgres://supabase_auth_admin:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
             {{- include "supachart.env" (dict "name" "GOTRUE_SITE_URL"                         "path" .Values.shared.site_url ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_URI_ALLOW_LIST"                   "path" .Values.shared.additional_redirect_urls ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_DISABLE_SIGNUP"                   "path" .Values.auth.settings.disable_signup ) | nindent 12 }}
