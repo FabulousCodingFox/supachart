@@ -23,20 +23,23 @@ spec:
           imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
           command: ["/bin/sh", "-c"]
           args:
-              - |
-                # Copy pgsodium stuff if it doesnt exists yet (Don't overwrite existing files)
-                if [ ! -f /mnt/postgresql-custom/supautils.conf ]; then
-                  cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
-                fi
+            - |
+              echo "Copy pgsodium stuff if it doesnt exists yet (Don't overwrite existing files)"
+              if [ ! -f /mnt/postgresql-custom/supautils.conf ]; then
+                cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
+              fi
 
-                # Merge initdb migrations and scripts
-                cp -a /docker-entrypoint-initdb.d/. /mnt/initdb-overwrite/
-                cp -r /mnt/init-scripts/* /mnt/initdb-overwrite/init-scripts/
-                cp -r /mnt/migrations/* /mnt/initdb-overwrite/migrations/
+              echo "Merge initdb migrations and scripts"
+              cp -a /docker-entrypoint-initdb.d/. /mnt/initdb-overwrite/
+              cp -rL /mnt/init-scripts/* /mnt/initdb-overwrite/init-scripts/
+              cp -rL /mnt/migrations/* /mnt/initdb-overwrite/migrations/
 
-                # Ensure the data directory has the correct permissions
-                chown -R 105:106 /mnt/postgresql-data
-                chmod 750 /mnt/postgresql-data
+              echo "Ensure the data directory has the correct permissions"
+              chown -R 105:106 /mnt/postgresql-data
+              chmod 750 /mnt/postgresql-data
+
+              echo "New initdb-overwrite directory:"
+              ls -laR /mnt/initdb-overwrite > /dev/stdout
           volumeMounts:
             - mountPath: /mnt/postgresql-custom
               name: db-config
