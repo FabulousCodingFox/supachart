@@ -24,6 +24,12 @@ spec:
           ports:
             - containerPort: 9000
               name: http
+          command:
+            - "/usr/local/bin/edge-runtime",
+          args:
+            - "start"
+            - "--main-service",
+            - "/home/deno/functions/main"
           env:
             {{- include "supachart.env" (dict "name" "JWT_SECRET"                "path" .Values.auth.jwt.secret ) | nindent 12 }}
             - name: SUPABASE_URL
@@ -31,7 +37,6 @@ spec:
             {{- include "supachart.env" (dict "name" "SUPABASE_ANON_KEY"         "path" .Values.shared.anon_key ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "SUPABASE_SERVICE_ROLE_KEY" "path" .Values.shared.service_role_key ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "VERIFY_JWT" "path" .Values.functions.verify_jwt ) | nindent 12 }}
-
             {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"         "path" .Values.db.password ) | nindent 12 }}
             - name: POSTGRES_PORT
               value: {{ .Values.db.service.port | quote }}
