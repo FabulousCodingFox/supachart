@@ -25,10 +25,10 @@ spec:
             - containerPort: 9000
               name: http
           command:
-            - "/usr/local/bin/edge-runtime",
+            - "/usr/local/bin/edge-runtime"
           args:
             - "start"
-            - "--main-service",
+            - "--main-service"
             - "/home/deno/functions/main"
           env:
             {{- include "supachart.env" (dict "name" "JWT_SECRET"                "path" .Values.auth.jwt.secret ) | nindent 12 }}
@@ -36,7 +36,7 @@ spec:
               value: "http://{{ include "supachart.kong.fullname" . }}:{{ .Values.kong.service.port }}"
             {{- include "supachart.env" (dict "name" "SUPABASE_ANON_KEY"         "path" .Values.shared.anon_key ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "SUPABASE_SERVICE_ROLE_KEY" "path" .Values.shared.service_role_key ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "VERIFY_JWT" "path" .Values.functions.verify_jwt ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "VERIFY_JWT"                "path" .Values.functions.verify_jwt ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"         "path" .Values.db.password ) | nindent 12 }}
             - name: POSTGRES_PORT
               value: {{ .Values.db.service.port | quote }}
@@ -46,4 +46,13 @@ spec:
               value: {{ include "supachart.db.fullname" . | quote }}
             - name: SUPABASE_DB_URL
               value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+          volumeMounts:
+            - name: functions-main
+              mountPath: /home/deno/functions/main
+      volumes:
+        - name: functions-main
+          configMap:
+            name: {{ include "supachart.functions.fullname" . }}-config
+            items:
+              - key: index.ts
 {{- end }}
