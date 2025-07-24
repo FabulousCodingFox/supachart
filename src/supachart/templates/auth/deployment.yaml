@@ -45,11 +45,11 @@ spec:
               value: "authenticated"
             {{- include "supachart.env" (dict "name" "GOTRUE_JWT_EXP"                          "path" .Values.auth.jwt.expiry ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_JWT_SECRET"                       "path" .Values.auth.jwt.secret ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "GOTRUE_EXTERNAL_EMAIL_ENABLED"           "path" .Values.auth.settings.enable_email_signup ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "GOTRUE_EXTERNAL_EMAIL_ENABLED"           "path" .Values.auth.settings.email.enable_signup ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_EXTERNAL_ANONYMOUS_USERS_ENABLED" "path" .Values.auth.settings.enable_anonymous_users ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "GOTRUE_MAILER_AUTOCONFIRM"               "path" .Values.auth.settings.enable_email_autoconfirm ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "GOTRUE_EXTERNAL_PHONE_ENABLED"           "path" .Values.auth.settings.enable_phone_signup ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "GOTRUE_SMS_AUTOCONFIRM"                  "path" .Values.auth.settings.enable_sms_autoconfirm ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "GOTRUE_MAILER_AUTOCONFIRM"               "path" .Values.auth.settings.email.enable_autoconfirm ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "GOTRUE_EXTERNAL_PHONE_ENABLED"           "path" .Values.auth.settings.phone.enable_signup ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "GOTRUE_SMS_AUTOCONFIRM"                  "path" .Values.auth.settings.phone.enable_autoconfirm ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_SMTP_ADMIN_EMAIL"                 "path" .Values.auth.settings.email.admin_email ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_SMTP_HOST"                        "path" .Values.auth.settings.email.host ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "GOTRUE_SMTP_PORT"                        "path" .Values.auth.settings.email.port ) | nindent 12 }}

@@ -99,22 +99,23 @@ auth:
     disable_signup:
       value: "false"
       secretKeyReference: *emptySecretRef
-    enable_email_signup: 
-      value: "true"
-      secretKeyReference: *emptySecretRef
-    enable_phone_signup: 
-      value: "true"
-      secretKeyReference: *emptySecretRef
-    enable_sms_autoconfirm: 
-      value: "true"
-      secretKeyReference: *emptySecretRef
     enable_anonymous_users:
       value: "false"
       secretKeyReference: *emptySecretRef
-    enable_email_autoconfirm: 
-      value: "true"
-      secretKeyReference: *emptySecretRef
+    phone:
+      enable_signup: 
+        value: "true"
+        secretKeyReference: *emptySecretRef
+      enable_autoconfirm: 
+        value: "true"
+        secretKeyReference: *emptySecretRef
     email:
+      enable_signup: 
+        value: "true"
+        secretKeyReference: *emptySecretRef
+      enable_autoconfirm: 
+        value: "true"
+        secretKeyReference: *emptySecretRef
       admin_email:
         value: "admin@example.com"
         secretKeyReference: *emptySecretRef
