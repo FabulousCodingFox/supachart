@@ -65,6 +65,8 @@ spec:
               value: "http://{{ include "supachart.studio.fullname" . }}:{{ .Values.studio.service.port }}"
             - name: SUPACHART_AUTH_URL
               value: "http://{{ include "supachart.auth.fullname" . }}:{{ .Values.auth.service.port }}"
+            - name: SUPACHART_FUNCTIONS_URL
+              value: "http://{{ include "supachart.functions.fullname" . }}:{{ .Values.functions.service.port }}"
       volumes:
         - name: kong-config
           emptyDir: {}

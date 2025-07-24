@@ -194,8 +194,8 @@ data:
 
       ## Edge Functions routes
       - name: functions-v1
-        _comment: 'Edge Functions: /functions/v1/* -> http://functions:9000/*'
-        url: http://functions:9000/
+        _comment: 'Edge Functions: /functions/v1/* -> $SUPACHART_FUNCTIONS_URL/*'
+        url: $SUPACHART_FUNCTIONS_URL/
         routes:
           - name: functions-v1-all
             strip_path: true
