@@ -23,7 +23,8 @@ data:
       project_logs:
         type: remap
         inputs:
-          - docker_host
+        #  - docker_host
+          - kubernetes_host
         source: |-
           .project = "default"
           .event_message = del(.message)
