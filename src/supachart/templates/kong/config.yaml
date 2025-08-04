@@ -207,7 +207,7 @@ data:
       ## Analytics routes
       - name: analytics-v1
         _comment: 'Analytics: /analytics/v1/* -> http://logflare:4000/*'
-        url: http://analytics:4000/
+        url: $SUPACHART_ANALYTICS_URL/
         routes:
           - name: analytics-v1-all
             strip_path: true

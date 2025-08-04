@@ -31,8 +31,7 @@ spec:
             - "/etc/vector/vector.yml"
           env:
             {{- if .Values.analytics.enabled }}
-            - name: LOGFLARE_PUBLIC_ACCESS_TOKEN
-              value: ""
+            {{- include "supachart.env" (dict "name" "LOGFLARE_PUBLIC_ACCESS_TOKEN"   "path" .Values.analytics.access_token.public ) | nindent 12 }}
             {{- end }}
           volumeMounts:
             - name: vector-logs
