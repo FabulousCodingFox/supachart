@@ -33,6 +33,10 @@ spec:
             {{- if .Values.analytics.enabled }}
             {{- include "supachart.env" (dict "name" "LOGFLARE_PUBLIC_ACCESS_TOKEN"   "path" .Values.analytics.access_token.public ) | nindent 12 }}
             {{- end }}
+            - name: VECTOR_SELF_NODE_NAME
+              valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
           volumeMounts:
             - name: vector-logs
               mountPath: /etc/vector/vector.yml
