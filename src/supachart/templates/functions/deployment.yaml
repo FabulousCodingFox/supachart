@@ -53,7 +53,4 @@ spec:
         - name: functions-main
           configMap:
             name: {{ include "supachart.functions.fullname" . }}-config
-            items:
-              - key: index.ts
-                path: index.ts
 {{- end }}

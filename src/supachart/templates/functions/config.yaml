@@ -100,4 +100,10 @@ data:
         })
       }
     })
+{{- if .Values.functions.storage.configmap.enabled }}
+  {{- range .Values.functions.storage.configmap.files }}
+  {{ .name }}: |
+{{ .content | indent 4 }}
+  {{- end }}
+{{- end }}
 {{- end }}

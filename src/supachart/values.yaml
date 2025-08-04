@@ -307,3 +307,14 @@ functions:
     annotations: {}
     securityContext: {}
 
+  # Storage
+  storage:
+    configmap:
+      enabled: false
+      #files:
+      #  - name: helloworld.ts
+      #    content: |
+      #      export default (req, res) => {
+      #        res.send("Hello from Supabase Functions!");
+      #      }
+
