@@ -1,0 +1,15 @@
+{{- if .Values.vector.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.vector.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.vector.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.vector.service.port }}
+      targetPort: 9001
+      protocol: TCP
+  selector: {{ include "supachart.vector.selectorLabels" . | nindent 4 }}
+{{- end }}

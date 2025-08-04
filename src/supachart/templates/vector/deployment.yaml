@@ -1,0 +1,45 @@
+{{- if .Values.vector.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.vector.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.vector.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.vector.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.vector.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.vector.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.vector.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.vector.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.vector.name" . }}
+          image: {{ .Values.vector.deployment.image }}
+          imagePullPolicy: {{ .Values.vector.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 9001
+              name: http
+          args:
+            - "--config"
+            - "/etc/vector/vector.yml"
+          env:
+            {{- if .Values.analytics.enabled }}
+            - name: LOGFLARE_PUBLIC_ACCESS_TOKEN
+              value: ""
+            {{- end }}
+          volumeMounts:
+            - name: vector-logs
+              mountPath: /etc/vector/vector.yml
+              subPath: vector.yml
+      volumes:
+        - name: vector-logs
+          configMap:
+            name: {{ include "supachart.vector.fullname" . }}-config
+{{- end }}

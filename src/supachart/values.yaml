@@ -354,3 +354,32 @@ analytics:
     private:
       value: "your-super-secret-and-long-logflare-key-private"
       secretKeyReference: *emptySecretRef
+
+# ==============================================================================
+# Vector Configuration
+# ==============================================================================
+
+vector:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 9001
+
+  # Deployment
+  deployment:
+    image: "timberio/vector:0.28.1-alpine"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
