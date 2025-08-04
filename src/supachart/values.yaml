@@ -318,3 +318,39 @@ functions:
       #        res.send("Hello from Supabase Functions!");
       #      }
 
+# ==============================================================================
+# Analytics Configuration
+# ==============================================================================
+
+analytics:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 4000
+
+  # Deployment
+  deployment:
+    image: "supabase/logflare:1.14.2"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+
+  access_token:
+    public:
+      value: "your-super-secret-and-long-logflare-key-public"
+      secretKeyReference: *emptySecretRef
+    private:
+      value: "your-super-secret-and-long-logflare-key-private"
+      secretKeyReference: *emptySecretRef

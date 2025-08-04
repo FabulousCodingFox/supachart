@@ -1,0 +1,58 @@
+{{- if .Values.analytics.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.analytics.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.analytics.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.analytics.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.analytics.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.analytics.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.analytics.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.analytics.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.analytics.name" . }}
+          image: {{ .Values.analytics.deployment.image }}
+          imagePullPolicy: {{ .Values.analytics.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: LOGFLARE_NODE_HOST
+              value: "127.0.0.1"
+            {{- include "supachart.env" (dict "name" "DB_USERNAME"                           "path" .Values.db.username ) | nindent 12 }}
+            - name: DB_DATABASE
+              value: "_supabase"
+            - name: DB_HOSTNAME
+              value: {{ include "supachart.db.fullname" . }}
+            - name: DB_PORT
+              value: {{ .Values.db.service.port | quote }}
+            {{- include "supachart.env" (dict "name" "DB_PASSWORD"                           "path" .Values.db.password ) | nindent 12 }}
+            - name: DB_SCHEMA
+              value: "_analytics"
+            {{- include "supachart.env" (dict "name" "LOGFLARE_PUBLIC_ACCESS_TOKEN"          "path" .Values.analytics.access_token.public ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "LOGFLARE_PRIVATE_ACCESS_TOKEN"         "path" .Values.analytics.access_token.private ) | nindent 12 }}
+            - name: LOGFLARE_SINGLE_TENANT
+              value: true
+            - name: LOGFLARE_SUPABASE_MODE
+              value: true
+            - name: LOGFLARE_MIN_CLUSTER_SIZE
+              value: 1
+
+            - name: POSTGRES_BACKEND_SCHEMA
+              value: "_analytics"
+            - name: LOGFLARE_FEATURE_FLAG_OVERRIDE
+              value: "multibackend=true"
+
+            - name: POSTGRES_BACKEND_URL
+              value: "postgresql://supabase_admin:$(DB_PASSWORD)@$(DB_HOSTNAME):$(DB_PORT)/_supabase"
+{{- end }}

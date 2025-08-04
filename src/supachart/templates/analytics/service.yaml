@@ -1,0 +1,15 @@
+{{- if .Values.analytics.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.analytics.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.analytics.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.analytics.service.port }}
+      targetPort: 8080
+      protocol: TCP
+  selector: {{ include "supachart.analytics.selectorLabels" . | nindent 4 }}
+{{- end }}
