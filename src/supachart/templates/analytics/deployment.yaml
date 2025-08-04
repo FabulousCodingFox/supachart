@@ -42,11 +42,11 @@ spec:
             {{- include "supachart.env" (dict "name" "LOGFLARE_PUBLIC_ACCESS_TOKEN"          "path" .Values.analytics.access_token.public ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "LOGFLARE_PRIVATE_ACCESS_TOKEN"         "path" .Values.analytics.access_token.private ) | nindent 12 }}
             - name: LOGFLARE_SINGLE_TENANT
-              value: true
+              value: "true"
             - name: LOGFLARE_SUPABASE_MODE
-              value: true
+              value: "true"
             - name: LOGFLARE_MIN_CLUSTER_SIZE
-              value: 1
+              value: "1"
 
             - name: POSTGRES_BACKEND_SCHEMA
               value: "_analytics"
