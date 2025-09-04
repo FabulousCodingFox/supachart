@@ -41,11 +41,10 @@ spec:
             - name: POSTGRES_PORT
               value: {{ .Values.db.service.port | quote }}
             {{- include "supachart.env" (dict "name" "POSTGRES_DB"               "path" .Values.db.database ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "POSTGRES_USER"             "path" .Values.db.username ) | nindent 12 }}
             - name: POSTGRES_HOST
               value: {{ include "supachart.db.fullname" . | quote }}
             - name: SUPABASE_DB_URL
-              value: "postgres://$(POSTGRES_USER):$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+              value: "postgres://postgres:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
           volumeMounts:
             - name: functions-main
               mountPath: /home/deno/functions/main

@@ -94,8 +94,8 @@ data:
 
       ## Secure REST routes
       - name: rest-v1
-        _comment: 'PostgREST: /rest/v1/* -> http://rest:3000/*'
-        url: http://rest:3000/
+        _comment: 'PostgREST: /rest/v1/* -> $SUPACHART_REST_URL/*'
+        url:  $SUPACHART_REST_URL/
         routes:
           - name: rest-v1-all
             strip_path: true
@@ -115,8 +115,8 @@ data:
 
       ## Secure GraphQL routes
       - name: graphql-v1
-        _comment: 'PostgREST: /graphql/v1/* -> http://rest:3000/rpc/graphql'
-        url: http://rest:3000/rpc/graphql
+        _comment: 'PostgREST: /graphql/v1/* ->  $SUPACHART_REST_URL/rpc/graphql'
+        url:  $SUPACHART_REST_URL/rpc/graphql
         routes:
           - name: graphql-v1-all
             strip_path: true
@@ -142,7 +142,7 @@ data:
       ## Secure Realtime routes
       - name: realtime-v1-ws
         _comment: 'Realtime: /realtime/v1/* -> ws://realtime:4000/socket/*'
-        url: http://realtime-dev.supabase-realtime:4000/socket
+        url: $SUPACHART_REALTIME_URL/socket
         protocol: ws
         routes:
           - name: realtime-v1-ws
@@ -162,7 +162,7 @@ data:
                 - anon
       - name: realtime-v1-rest
         _comment: 'Realtime: /realtime/v1/* -> ws://realtime:4000/socket/*'
-        url: http://realtime-dev.supabase-realtime:4000/api
+        url: $SUPACHART_REALTIME_URL/api
         protocol: http
         routes:
           - name: realtime-v1-rest
@@ -182,8 +182,8 @@ data:
                 - anon
       ## Storage routes: the storage server manages its own auth
       - name: storage-v1
-        _comment: 'Storage: /storage/v1/* -> http://storage:5000/*'
-        url: http://storage:5000/
+        _comment: 'Storage: /storage/v1/* ->  $SUPACHART_STORAGE_URL/*'
+        url:  $SUPACHART_STORAGE_URL/
         routes:
           - name: storage-v1-all
             strip_path: true
@@ -206,7 +206,7 @@ data:
 
       ## Analytics routes
       - name: analytics-v1
-        _comment: 'Analytics: /analytics/v1/* -> http://logflare:4000/*'
+        _comment: 'Analytics: /analytics/v1/* -> $SUPACHART_ANALYTICS_URL/*'
         url: $SUPACHART_ANALYTICS_URL/
         routes:
           - name: analytics-v1-all

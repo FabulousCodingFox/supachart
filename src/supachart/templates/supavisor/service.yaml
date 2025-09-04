@@ -1,0 +1,19 @@
+{{- if .Values.supavisor.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.supavisor.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.supavisor.service.type }}
+  ports:
+    - name: postgres
+      port: 5432
+      targetPort: 5432
+      protocol: TCP
+    - name: pooler
+      port: 6543
+      targetPort: 6543
+      protocol: TCP
+  selector: {{ include "supachart.supavisor.selectorLabels" . | nindent 4 }}
+{{- end }}

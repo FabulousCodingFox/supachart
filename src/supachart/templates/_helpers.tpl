@@ -82,7 +82,8 @@ Wait for db initcontainer
         sleep 2
       done
   env:
-    {{- include "supachart.env" (dict "name" "POSTGRES_USER" "path" .Values.db.username ) | nindent 4 }}
+    - name: POSTGRES_USER
+      value: "supabase_admin"
     - name: POSTGRES_PORT
       value: {{ .Values.db.service.port | quote }}
     - name: POSTGRES_HOST

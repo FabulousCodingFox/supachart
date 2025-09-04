@@ -23,13 +23,30 @@ spec:
         - name: {{ include "supachart.analytics.name" . }}
           image: {{ .Values.analytics.deployment.image }}
           imagePullPolicy: {{ .Values.analytics.deployment.imagePullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 4000
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 10
           ports:
             - containerPort: 4000
               name: http
           env:
             - name: LOGFLARE_NODE_HOST
               value: "127.0.0.1"
-            {{- include "supachart.env" (dict "name" "DB_USERNAME"                           "path" .Values.db.username ) | nindent 12 }}
+            - name: DB_USERNAME
+              value: "supabase_admin"
             - name: DB_DATABASE
               value: "_supabase"
             - name: DB_HOSTNAME

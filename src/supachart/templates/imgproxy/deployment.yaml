@@ -1,0 +1,60 @@
+{{- if .Values.imgproxy.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.imgproxy.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.imgproxy.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.imgproxy.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.imgproxy.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.imgproxy.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.imgproxy.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.imgproxy.deployment.securityContext | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.imgproxy.name" . }}
+          image: {{ .Values.imgproxy.deployment.image }}
+          imagePullPolicy: {{ .Values.imgproxy.deployment.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command: ["imgproxy", "health"]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            exec:
+              command: ["imgproxy", "health"]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3     
+          ports:
+            - containerPort: 5001
+              name: http
+          {{- if .Values.storage.volume.enabled }}
+          volumeMounts:
+            - mountPath: /var/lib/storage
+              name: storage
+          {{- end }}
+          env:
+            - name: IMGPROXY_BIND
+              value: ":5001"
+            {{- if .Values.storage.volume.enabled }}
+            - name: IMGPROXY_LOCAL_FILESYSTEM_ROOT
+              value: "/"
+            {{- end }}
+            - name: IMGPROXY_USE_ETAG
+              value: "true"
+            {{- include "supachart.env" (dict "name" "IMGPROXY_ENABLE_WEBP_DETECTION" "path" .Values.imgproxy.webp_detection ) | nindent 12 }}
+      {{- if .Values.storage.volume.enabled }}
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "supachart.storage.fullname" . }}
+      {{- end }}
+{{- end }}

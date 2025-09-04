@@ -1,0 +1,83 @@
+{{- if .Values.supavisor.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.supavisor.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.supavisor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.supavisor.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.supavisor.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.supavisor.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.supavisor.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.supavisor.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.supavisor.name" . }}
+          image: {{ .Values.supavisor.deployment.image }}
+          imagePullPolicy: {{ .Values.supavisor.deployment.imagePullPolicy }}
+          ports:
+            - name: postgres
+              containerPort: 5432
+            - name: pooler
+              containerPort: 6543
+          command: ["/bin/sh", "-c", "/app/bin/migrate && /app/bin/supavisor eval \"$$(cat /etc/pooler/pooler.exs)\" && /app/bin/server"]
+          volumeMounts:
+            - mountPath: /etc/pooler/pooler.exs
+              name: pooler-config
+              subPath: pooler.exs
+              readOnly: true
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+              scheme: HTTP
+            timeoutSeconds: 5 
+            periodSeconds: 10
+          startupProbe:
+            httpGet:
+              path: /api/health
+              port: 4000
+              scheme: HTTP
+            timeoutSeconds: 5
+            periodSeconds: 10
+            failureThreshold: 5
+          env:
+            - name: PORT
+              value: "4000"
+            - name: POSTGRES_PORT
+              value: {{ .Values.db.service.port | quote }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password ) | nindent 12 }}
+            - name: POSTGRES_HOST
+              value: {{ include "supachart.db.fullname" . | quote }}
+            - name: DATABASE_URL
+              value: "ecto://supabase_admin:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/_supabase"
+            - name: CLUSTER_POSTGRES
+              value: "true"
+            {{- include "supachart.env" (dict "name" "SECRET_KEY_BASE"    "path" .Values.shared.secret_key_base ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "VAULT_ENC_KEY"      "path" .Values.shared.vault_enc_key ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "API_JWT_SECRET"     "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "METRICS_JWT_SECRET" "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            - name: REGION
+              value: "local"
+            - name: ERL_AFLAGS
+              value: "-proto_dist inet_tcp"
+            {{- include "supachart.env" (dict "name" "POOLER_TENANT_ID"         "path" .Values.supavisor.tenant_id ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POOLER_DEFAULT_POOL_SIZE" "path" .Values.supavisor.default_pool_size ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POOLER_MAX_CLIENT_CONN"   "path" .Values.supavisor.max_pool_client_connections ) | nindent 12 }}
+            - name: POOLER_POOL_MODE
+              value: "transaction"
+            {{- include "supachart.env" (dict "name" "DB_POOL_SIZE" "path" .Values.supavisor.db_pool_size ) | nindent 12 }}
+      volumes:
+        - name: pooler-config
+          configMap:
+            name: {{ include "supachart.supavisor.fullname" . }}-config
+{{- end }}

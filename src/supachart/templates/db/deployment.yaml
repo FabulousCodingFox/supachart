@@ -4,6 +4,8 @@ metadata:
   name: {{ include "supachart.db.fullname" . }}
   labels: {{- include "supachart.labels" . | nindent 4 }}
 spec:
+  strategy:
+    type: Recreate
   replicas: 1 # There is no scaling support for the database, it should always run as a single instance
   selector:
     matchLabels: {{ include "supachart.db.selectorLabels" . | nindent 6 }}
@@ -16,7 +18,6 @@ spec:
       serviceAccountName: {{ include "supachart.db.serviceAccountName" . }}
       {{- end }}
       securityContext: {{- toYaml .Values.db.deployment.securityContext | nindent 8 }}
-      {{- if .Values.db.persistence.enabled }}
       initContainers:
         - name: docker-compatibility
           image: {{ .Values.db.deployment.image }}
@@ -42,21 +43,33 @@ spec:
               ls -laR /mnt/initdb-overwrite > /dev/stdout
           volumeMounts:
             - mountPath: /mnt/postgresql-custom
-              name: db-config
+              name: data
+              subPath: config/
             - mountPath: /mnt/postgresql-data
-              name: db-data
-              subPath: postgresql-data/
+              name: data
+              subPath: data/
             - mountPath: /mnt/init-scripts
               name: init-scripts
             - mountPath: /mnt/migrations
               name: migrations
             - mountPath: /mnt/initdb-overwrite
               name: initdb-overwrite
-      {{- end }}
       containers:
         - name: {{ include "supachart.db.name" . }}
           image: {{ .Values.db.deployment.image }}
           imagePullPolicy: {{ .Values.db.deployment.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
+            periodSeconds: 5
+            timeoutSeconds: 5 
+            failureThreshold: 3
+          startupProbe:
+            exec:
+              command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 10
           ports:
             - containerPort: 5432
               name: postgres
@@ -64,19 +77,17 @@ spec:
             # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd
             runAsUser: 105
             runAsGroup: 106
-          command: {{- toYaml .Values.db.deployment.command | nindent 12 }}
-          args: {{- toYaml .Values.db.deployment.args | nindent 12 }}
+          command: ["/usr/local/bin/docker-entrypoint.sh"]
+          args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d
               name: initdb-overwrite
-            {{- if .Values.db.persistence.enabled }}
             - mountPath: /etc/postgresql-custom
-              name: db-config
+              name: data
+              subPath: config/
             - mountPath: /var/lib/postgresql/data
-              name: db-data
-              # For compatibility with ext4 lost+found
-              subPath: postgresql-data/
-            {{- end }}
+              name: data
+              subPath: data/
           env:
             - name: POSTGRES_HOST
               value: /var/run/postgresql
@@ -86,8 +97,6 @@ spec:
               value: "5432"
             {{- include "supachart.env" (dict "name" "PGPASSWORD"        "path" .Values.db.password     ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password     ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "PGUSER"            "path" .Values.db.username     ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "POSTGRES_USER"     "path" .Values.db.username     ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "PGDATABASE"        "path" .Values.db.database     ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database     ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "JWT_SECRET"        "path" .Values.auth.jwt.secret ) | nindent 12 }}
@@ -101,11 +110,6 @@ spec:
         - name: migrations
           configMap:
             name: {{ include "supachart.db.fullname" . }}-migrations
-        {{- if .Values.db.persistence.enabled }}
-        - name: db-data
+        - name: data
           persistentVolumeClaim:
-           claimName: {{ include "supachart.db.fullname" . }}-data
-        - name: db-config
-          persistentVolumeClaim:
-            claimName: {{ include "supachart.db.fullname" . }}-config
-        {{- end }}
+           claimName: {{ include "supachart.db.fullname" . }}

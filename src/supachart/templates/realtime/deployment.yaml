@@ -1,0 +1,58 @@
+{{- if .Values.realtime.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.realtime.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.realtime.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.realtime.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.realtime.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.realtime.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.realtime.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.realtime.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.realtime.name" . }}
+          image: {{ .Values.realtime.deployment.image }}
+          imagePullPolicy: {{ .Values.realtime.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 4000
+              name: http
+          env:
+            - name: PORT
+              value: "4000"
+            - name: DB_HOST
+              value: {{ include "supachart.db.fullname" . | quote }}
+            - name: DB_PORT
+              value: {{ .Values.db.service.port | quote }}
+            - name: DB_USER
+              value: "supabase_admin"
+            {{- include "supachart.env" (dict "name" "DB_PASSWORD"     "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DB_NAME"         "path" .Values.db.database ) | nindent 12 }}
+            - name: DB_AFTER_CONNECT_QUERY
+              value: "SET search_path TO _realtime"
+            - name: DB_ENC_KEY
+              value: "supabaserealtime"
+            {{- include "supachart.env" (dict "name" "API_JWT_SECRET"  "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SECRET_KEY_BASE" "path" .Values.shared.secret_key_base ) | nindent 12 }}
+            - name: ERL_AFLAGS
+              value: "-proto_dist inet_tcp"
+            - name: DNS_NODES
+              value: "''"
+            - name: RLIMIT_NOFILE
+              value: "10000"
+            - name: APP_NAME
+              value: "realtime" 
+            - name: SEED_SELF_HOST
+              value: "true"
+            - name: RUN_JANITOR
+              value: "true"
+{{- end }}

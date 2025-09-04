@@ -1,0 +1,14 @@
+{{- if .Values.storage.volume.enabled }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "supachart.storage.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.volume.persistence.size }}
+  storageClassName: {{ .Values.storage.volume.persistence.storageClass }}
+{{- end }}

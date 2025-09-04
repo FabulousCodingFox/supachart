@@ -1,0 +1,46 @@
+{{- if .Values.rest.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.rest.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.rest.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.rest.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.rest.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.rest.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.rest.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.rest.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.rest.name" . }}
+          image: {{ .Values.rest.deployment.image }}
+          imagePullPolicy: {{ .Values.rest.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD"             "path" .Values.db.password ) | nindent 12 }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.db.service.port | quote }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"                   "path" .Values.db.database ) | nindent 12 }}
+            - name: POSTGRES_HOST
+              value: {{ include "supachart.db.fullname" . | quote }}
+            - name: PGRST_DB_URI
+              value: "postgres://supabase_auth_admin:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+            {{- include "supachart.env" (dict "name" "PGRST_DB_SCHEMAS"              "path" .Values.rest.schemas ) | nindent 12 }}
+            - name: PGRST_DB_ANON_ROLE
+              value: "anon"
+            {{- include "supachart.env" (dict "name" "PGRST_JWT_SECRET"              "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            - name: PGRST_DB_USE_LEGACY_GUCS
+              value: "false"
+            {{- include "supachart.env" (dict "name" "PGRST_APP_SETTINGS_JWT_SECRET" "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PGRST_APP_SETTINGS_JWT_EXP"    "path" .Values.auth.jwt.expiry ) | nindent 12 }}
+{{- end }}

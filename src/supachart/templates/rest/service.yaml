@@ -1,0 +1,15 @@
+{{- if .Values.rest.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.rest.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.rest.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.rest.service.port }}
+      targetPort: 3000
+      protocol: TCP
+  selector: {{ include "supachart.rest.selectorLabels" . | nindent 4 }}
+{{- end }}

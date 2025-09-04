@@ -30,6 +30,12 @@ shared:
   additional_redirect_urls:
     value: ""
     secretKeyReference: *emptySecretRef
+  secret_key_base:
+    value: "UpNVntn3cDxHJpq99YMc1T1AQgQpc8kfYTuRgBiYa15BLrx8etQoXz3gZv1/u2oq"
+    secretKeyReference: *emptySecretRef
+  vault_enc_key:
+    value: "your-encryption-key-32-chars-min"
+    secretKeyReference: *emptySecretRef
 
 # ==============================================================================
 # Database Configuration
@@ -43,9 +49,6 @@ db:
   # Secrets
   password:
     value: "your-super-secret-and-long-postgres-password"
-    secretKeyReference: *emptySecretRef
-  username:
-    value: "supabase_admin"
     secretKeyReference: *emptySecretRef
   database:
     value: "postgres"
@@ -68,12 +71,9 @@ db:
     imagePullPolicy: IfNotPresent
     annotations: {}
     securityContext: {}
-    command: ["/usr/local/bin/docker-entrypoint.sh"]
-    args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
 
   # Database Persistence
   persistence:
-    enabled: true
     storageClass: "standard"
     size: "8Gi"
 
@@ -383,3 +383,193 @@ vector:
     replicas: 1
     annotations: {}
     securityContext: {}
+
+# ==============================================================================
+# Rest Configuration
+# ==============================================================================
+
+rest:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 3000
+
+  # Deployment
+  deployment:
+    image: "postgrest/postgrest:v12.2.12"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+  
+  schemas:
+    value: "public,storage,graphql_public"
+    secretKeyReference: *emptySecretRef
+
+# ==============================================================================
+# Realtime Configuration
+# ==============================================================================
+
+realtime:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 4000
+
+  # Deployment
+  deployment:
+    image: "supabase/realtime:v2.34.47"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+
+# ==============================================================================
+# Imgproxy Configuration
+# ==============================================================================
+
+imgproxy:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+    port: 5001
+
+  # Deployment
+  deployment:
+    image: "darthsim/imgproxy:v3.8.0"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+
+  webp_detection:
+    value: true
+    secretKeyReference: *emptySecretRef
+
+# ==============================================================================
+# Supavisor Configuration
+# ==============================================================================
+
+supavisor:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    type: ClusterIP
+
+  # Deployment
+  deployment:
+    image: "supabase/supavisor:2.5.7"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+
+  tenant_id:
+    value: "your-tenant-id"
+    secretKeyReference: *emptySecretRef
+
+  default_pool_size:
+    value: 20
+    secretKeyReference: *emptySecretRef
+
+  max_pool_client_connections:
+    value: 100
+    secretKeyReference: *emptySecretRef
+
+  db_pool_size:
+    value: 5
+    secretKeyReference: *emptySecretRef
+
+# ==============================================================================
+# Storage Configuration
+# ==============================================================================
+
+storage:
+  # General configuration
+  enabled: true
+  nameOverride: ""
+  fullnameOverride: ""
+
+  # Service Account
+  serviceAccount:
+    enabled: true
+    name: ""
+    annotations: {}
+
+  # Service
+  service:
+    port: 5000
+    type: ClusterIP
+
+  # Deployment
+  deployment:
+    image: "supabase/storage-api:v1.25.7"
+    imagePullPolicy: IfNotPresent
+    replicas: 1
+    annotations: {}
+    securityContext: {}
+
+  volume:
+    enabled: true
+    persistence:
+      storageClass: "standard"
+      size: "16Gi"
+    
+  s3:
+    enabled: false
+    endpoint:
+      value: "http://minio:9000"
+      secretKeyReference: *emptySecretRef
+    protocol:
+      value: "http"
+      secretKeyReference: *emptySecretRef
+    access_key:
+      id:
+        value: "supa-storage"
+        secretKeyReference: *emptySecretRef
+      secret:
+        value: "secret1234"
+        secretKeyReference: *emptySecretRef

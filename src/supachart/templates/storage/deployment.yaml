@@ -1,0 +1,80 @@
+{{- if .Values.storage.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "supachart.storage.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {{ include "supachart.storage.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "supachart.storage.selectorLabels" . | nindent 8 }}
+      annotations: {{- toYaml .Values.storage.deployment.annotations | nindent 8 }}
+    spec:
+      {{- if .Values.storage.serviceAccount.enabled }}
+      serviceAccountName: {{ include "supachart.storage.serviceAccountName" . }}
+      {{- end }}
+      securityContext: {{- toYaml .Values.storage.deployment.securityContext | nindent 8 }}
+      initContainers:
+        {{ include "supachart.waitForDbInitContainer" . | nindent 8 }}
+      containers:
+        - name: {{ include "supachart.storage.name" . }}
+          image: {{ .Values.storage.deployment.image }}
+          imagePullPolicy: {{ .Values.storage.deployment.imagePullPolicy }}
+          ports:
+            - containerPort: 5000
+              name: http
+          {{- if .Values.storage.volume.enabled }}
+          volumeMounts:
+            - mountPath: /var/lib/storage
+              name: storage
+          {{- end }}
+          env:
+            {{- include "supachart.env" (dict "name" "ANON_KEY"    "path" .Values.shared.anon_key ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "SERVICE_KEY" "path" .Values.shared.service_role_key ) | nindent 12 }}
+            - name: POSTGREST_URL
+              value: "http:/{{ include "supachart.rest.fullname" . }}:{{ .Values.rest.service.port }}"
+            {{- include "supachart.env" (dict "name" "PGRST_JWT_SECRET"  "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database ) | nindent 12 }}
+            - name: DATABASE_URL
+              value: "postgres://supabase_storage_admin:$(POSTGRES_PASSWORD)@{{ include "supachart.db.fullname" . }}:{{ .Values.db.service.port }}/$(POSTGRES_DB)"
+            - name: FILE_SIZE_LIMIT
+              value: "52428800"
+            - name: ENABLE_IMAGE_TRANSFORMATION
+              value: {{ .Values.imgproxy.enabled | quote }}
+            - name: IMGPROXY_URL
+              value: "http://{{ include "supachart.imgproxy.fullname" . }}:{{ .Values.imgproxy.service.port }}"
+            - name: GLOBAL_S3_BUCKET
+              value: "stub"
+            - name: TENANT_ID
+              value: "stub"
+            - name: REGION
+              value: "stub"
+            - name: FILE_STORAGE_BACKEND_PATH
+              value: "/var/lib/storage"
+            {{- if .Values.storage.volume.enabled }}
+            - name: STORAGE_BACKEND
+              value: "file"
+            {{- end }}
+            {{- if .Values.storage.s3.enabled }}
+            - name: STORAGE_BACKEND
+              value: "s3"
+            - name: GLOBAL_S3_FORCE_PATH_STYLE
+              value: "true"
+            - name: AWS_DEFAULT_REGION
+              value: "stub"
+            {{- include "supachart.env" (dict "name" "GLOBAL_S3_ENDPOINT"    "path" .Values.storage.s3.secret.endpoint ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "GLOBAL_S3_PROTOCOL"    "path" .Values.storage.s3.secret.protocol ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "AWS_ACCESS_KEY_ID"     "path" .Values.storage.s3.secret.access_key.id ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "AWS_SECRET_ACCESS_KEY" "path" .Values.storage.s3.secret.access_key.secret ) | nindent 12 }}
+            {{- end }}
+      {{- if .Values.storage.volume.enabled }}
+      volumes:
+        - name: storage
+          persistentVolumeClaim:
+            claimName: {{ include "supachart.storage.fullname" . }}
+      {{- end }}
+{{- end }}

@@ -1,0 +1,15 @@
+{{- if .Values.imgproxy.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "supachart.imgproxy.fullname" . }}
+  labels: {{- include "supachart.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.imgproxy.service.type }}
+  ports:
+    - name: http
+      port: {{ .Values.imgproxy.service.port }}
+      targetPort: 5001
+      protocol: TCP
+  selector: {{ include "supachart.imgproxy.selectorLabels" . | nindent 4 }}
+{{- end }}

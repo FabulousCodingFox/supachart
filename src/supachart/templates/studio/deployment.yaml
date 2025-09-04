@@ -21,6 +21,22 @@ spec:
         - name: {{ include "supachart.studio.name" . }}
           image: {{ .Values.studio.deployment.image }}
           imagePullPolicy: {{ .Values.studio.deployment.imagePullPolicy }}
+          readinessProbe:
+            httpGet:
+              path: /api/platform/profile
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /api/platform/profile
+              port: 3000
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 10
+            failureThreshold: 3
           ports:
             - containerPort: 3000
               name: http

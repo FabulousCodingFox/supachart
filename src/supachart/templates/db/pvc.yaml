@@ -1,8 +1,7 @@
-{{- if .Values.db.persistence.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "supachart.db.fullname" . }}-data
+  name: {{ include "supachart.db.fullname" . }}
   labels: {{- include "supachart.labels" . | nindent 4 }}
 spec:
   accessModes:
@@ -11,17 +10,3 @@ spec:
     requests:
       storage: {{ .Values.db.persistence.size }}
   storageClassName: {{ .Values.db.persistence.storageClass }}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ include "supachart.db.fullname" . }}-config
-  labels: {{- include "supachart.labels" . | nindent 4 }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 16Mi
-  storageClassName: {{ .Values.db.persistence.storageClass }}
-{{- end -}}

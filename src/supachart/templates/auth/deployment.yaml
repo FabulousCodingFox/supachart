@@ -23,6 +23,22 @@ spec:
         - name: {{ include "supachart.auth.name" . }}
           image: {{ .Values.auth.deployment.image }}
           imagePullPolicy: {{ .Values.auth.deployment.imagePullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9999
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5 
+            failureThreshold: 3 
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 9999
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           ports:
             - containerPort: 9999
               name: http

@@ -23,6 +23,22 @@ spec:
         - name: {{ include "supachart.vector.name" . }}
           image: {{ .Values.vector.deployment.image }}
           imagePullPolicy: {{ .Values.vector.deployment.imagePullPolicy }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 9001
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 9001
+              scheme: HTTP
+            periodSeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 3
           ports:
             - containerPort: 9001
               name: http
@@ -35,8 +51,8 @@ spec:
             {{- end }}
             - name: VECTOR_SELF_NODE_NAME
               valueFrom:
-              fieldRef:
-                fieldPath: spec.nodeName
+                fieldRef:
+                  fieldPath: spec.nodeName
           volumeMounts:
             - name: vector-logs
               mountPath: /etc/vector/vector.yml
