@@ -17,6 +17,28 @@ spec:
       serviceAccountName: {{ include "supachart.functions.serviceAccountName" . }}
       {{- end }}
       securityContext: {{- toYaml .Values.functions.deployment.securityContext | nindent 8 }}
+      initContainers:
+        - name: copy-functions
+          image: alpine
+          command:
+          - sh
+          - -c
+          - |
+            set -e
+            rm -rf /mnt/functions/*
+            mkdir -p $(dirname /mnt/functions/main/index.ts)
+            cp /mnt/cm/index.ts /mnt/functions/main/index.ts
+            {{- if .Values.functions.storage.configmap.enabled }}
+            {{- range .Values.functions.storage.configmap.files }}
+            mkdir -p $(dirname /mnt/functions/{{ .name }})
+            cp /mnt/cm/{{ sha256sum .name }} /mnt/functions/{{ .name }}
+            {{- end }}
+            {{- end }}
+          volumeMounts:
+          - name: functions-main
+            mountPath: /mnt/functions
+          - name: functions-cm
+            mountPath: /mnt/cm
       containers:
         - name: {{ include "supachart.functions.name" . }}
           image: {{ .Values.functions.deployment.image }}
@@ -45,11 +67,25 @@ spec:
               value: {{ include "supachart.db.fullname" . | quote }}
             - name: SUPABASE_DB_URL
               value: "postgres://postgres:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+            
+            {{- range .Values.functions.env }}
+            - name: {{ .name }}
+              {{- if .secretKeyReference }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secretKeyReference.name }}
+                  key: {{ .secretKeyReference.key | default "value" }}
+              {{- else }}
+              value: {{ .value | quote }}
+              {{- end }}
+            {{- end }}
           volumeMounts:
             - name: functions-main
-              mountPath: /home/deno/functions/main
+              mountPath: /home/deno/functions/
       volumes:
         - name: functions-main
+          emptyDir: {}
+        - name: functions-cm
           configMap:
             name: {{ include "supachart.functions.fullname" . }}-config
 {{- end }}

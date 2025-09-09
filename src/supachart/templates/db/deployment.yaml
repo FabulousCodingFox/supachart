@@ -30,17 +30,9 @@ spec:
                 cp -a /etc/postgresql-custom/. /mnt/postgresql-custom/
               fi
 
-              echo "Merge initdb migrations and scripts"
-              cp -a /docker-entrypoint-initdb.d/. /mnt/initdb-overwrite/
-              cp -rL /mnt/init-scripts/* /mnt/initdb-overwrite/init-scripts/
-              cp -rL /mnt/migrations/* /mnt/initdb-overwrite/migrations/
-
               echo "Ensure the data directory has the correct permissions"
               chown -R 105:106 /mnt/postgresql-data
               chmod 750 /mnt/postgresql-data
-
-              echo "New initdb-overwrite directory:"
-              ls -laR /mnt/initdb-overwrite > /dev/stdout
           volumeMounts:
             - mountPath: /mnt/postgresql-custom
               name: data
@@ -48,12 +40,6 @@ spec:
             - mountPath: /mnt/postgresql-data
               name: data
               subPath: data/
-            - mountPath: /mnt/init-scripts
-              name: init-scripts
-            - mountPath: /mnt/migrations
-              name: migrations
-            - mountPath: /mnt/initdb-overwrite
-              name: initdb-overwrite
       containers:
         - name: {{ include "supachart.db.name" . }}
           image: {{ .Values.db.deployment.image }}
@@ -69,19 +55,17 @@ spec:
               command: ["pg_isready", "-U", "postgres", "-h", "localhost"]
             periodSeconds: 5
             timeoutSeconds: 5
-            failureThreshold: 10
+            failureThreshold: 10000
           ports:
             - containerPort: 5432
               name: postgres
           securityContext:
-            # docker run --rm -it supabase/postgres:15.8.1.060 getent passwd
+            # docker run --rm -it supabase/postgres:15.8.1.060 id postgres
             runAsUser: 105
             runAsGroup: 106
           command: ["/usr/local/bin/docker-entrypoint.sh"]
           args: ["postgres", "-c", "config_file=/etc/postgresql/postgresql.conf", "-c", "log_min_messages=fatal"]
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d
-              name: initdb-overwrite
             - mountPath: /etc/postgresql-custom
               name: data
               subPath: config/
@@ -95,21 +79,13 @@ spec:
               value: "5432"
             - name: POSTGRES_PORT
               value: "5432"
-            {{- include "supachart.env" (dict "name" "PGPASSWORD"        "path" .Values.db.password     ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password     ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "PGDATABASE"        "path" .Values.db.database     ) | nindent 12 }}
-            {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database     ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PGPASSWORD"        "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "PGDATABASE"        "path" .Values.db.database ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_DB"       "path" .Values.db.database ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "JWT_SECRET"        "path" .Values.auth.jwt.secret ) | nindent 12 }}
             {{- include "supachart.env" (dict "name" "JWT_EXP"           "path" .Values.auth.jwt.expiry ) | nindent 12 }}
       volumes:
-        - name: initdb-overwrite
-          emptyDir: {}
-        - name: init-scripts
-          configMap:
-            name: {{ include "supachart.db.fullname" . }}-init-scripts
-        - name: migrations
-          configMap:
-            name: {{ include "supachart.db.fullname" . }}-migrations
         - name: data
           persistentVolumeClaim:
            claimName: {{ include "supachart.db.fullname" . }}

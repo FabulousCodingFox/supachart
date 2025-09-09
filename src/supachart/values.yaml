@@ -77,6 +77,13 @@ db:
     storageClass: "standard"
     size: "8Gi"
 
+  custom_migrations:
+    enabled: false
+    migrations:
+    #  - name: ""
+    #    content: ""
+
+
 # ==============================================================================
 # Auth Configuration
 # ==============================================================================
@@ -317,6 +324,11 @@ functions:
       #      export default (req, res) => {
       #        res.send("Hello from Supabase Functions!");
       #      }
+
+  env:
+    #- name: "SUPABASE_FUNCTIONS_JWT_SECRET
+    #  value: "supabase"
+    #  secretKeyReference: *emptySecretRef
 
 # ==============================================================================
 # Analytics Configuration

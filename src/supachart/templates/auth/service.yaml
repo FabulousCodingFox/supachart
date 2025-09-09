@@ -9,7 +9,7 @@ spec:
   ports:
     - name: http
       port: {{ .Values.auth.service.port }}
-      targetPort: 8080
+      targetPort: 9999
       protocol: TCP
   selector: {{ include "supachart.auth.selectorLabels" . | nindent 4 }}
 {{- end }}

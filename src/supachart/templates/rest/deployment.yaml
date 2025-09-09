@@ -23,6 +23,7 @@ spec:
         - name: {{ include "supachart.rest.name" . }}
           image: {{ .Values.rest.deployment.image }}
           imagePullPolicy: {{ .Values.rest.deployment.imagePullPolicy }}
+          command: ["postgrest"]
           ports:
             - containerPort: 3000
               name: http
@@ -34,7 +35,7 @@ spec:
             - name: POSTGRES_HOST
               value: {{ include "supachart.db.fullname" . | quote }}
             - name: PGRST_DB_URI
-              value: "postgres://supabase_auth_admin:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
+              value: "postgres://authenticator:$(POSTGRES_PASSWORD)@$(POSTGRES_HOST):$(POSTGRES_PORT)/$(POSTGRES_DB)"
             {{- include "supachart.env" (dict "name" "PGRST_DB_SCHEMAS"              "path" .Values.rest.schemas ) | nindent 12 }}
             - name: PGRST_DB_ANON_ROLE
               value: "anon"

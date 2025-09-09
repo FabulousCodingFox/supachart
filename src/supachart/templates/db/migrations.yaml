@@ -1,0 +1,54 @@
+{{- if .Values.db.custom_migrations.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "supachart.db.fullname" . }}-migrations
+  labels:
+    {{- include "supachart.labels" . | nindent 4 }}
+data:
+   {{- range .Values.db.custom_migrations.migrations }}
+     {{ sha256sum .name }}: |-
+{{ .content | indent 6 }}
+   {{- end }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "supachart.db.fullname" . }}-migrations
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: OnFailure
+      containers:
+        - name: migrations
+          image: {{ .Values.db.deployment.image }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for DB to be ready..."
+              until pg_isready -h "{{ include "supachart.db.fullname" . }}" -p "{{ .Values.db.service.port }}" -U "supabase_admin"; do
+                sleep 2
+              done
+              echo "DB is up, running migrations..."
+              {{- range .Values.db.custom_migrations.migrations }}
+              echo "Running {{ .name }}"
+              psql "postgresql://supabase_admin:$DB_PASS@$DB_URL/$DB_NAME" -f "/mnt/migrations/{{ sha256sum .name }}"
+              {{- end }}
+          env:
+            {{- include "supachart.env" (dict "name" "DB_PASS"           "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DB_NAME"           "path" .Values.db.database ) | nindent 12 }}
+            - name: DB_URL
+              value: "{{ include "supachart.db.fullname" . }}:{{ .Values.db.service.port }}"
+          volumeMounts:
+            - name: migrations-sql
+              mountPath: /mnt/migrations
+      volumes:
+        - name: migrations-sql
+          configMap:
+            name: {{ include "supachart.db.fullname" . }}-migrations
+{{- end }}

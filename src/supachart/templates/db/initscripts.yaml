@@ -1,45 +1,11 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ include "supachart.db.fullname" . }}-migrations
-  labels:
-    {{- include "supachart.labels" . | nindent 4 }}
-data:
-  '99-realtime.sql': |
-    \set pguser `echo "$POSTGRES_USER"`
-
-    create schema if not exists _realtime;
-    alter schema _realtime owner to :pguser;
-
-  '97-_supabase.sql': |
-    \set pguser `echo "$POSTGRES_USER"`
-
-    CREATE DATABASE _supabase WITH OWNER :pguser;
-
-  '99-logs.sql': |
-    \set pguser `echo "$POSTGRES_USER"`
-
-    \c _supabase
-    create schema if not exists _analytics;
-    alter schema _analytics owner to :pguser;
-    \c postgres
-
-  '99-pooler.sql': |
-    \set pguser `echo "$POSTGRES_USER"`
-
-    \c _supabase
-    create schema if not exists _supavisor;
-    alter schema _supavisor owner to :pguser;
-    \c postgres
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
   name: {{ include "supachart.db.fullname" . }}-init-scripts
   labels:
     {{- include "supachart.labels" . | nindent 4 }}
 data:
-  '98-webhooks.sql': |
+  '00098-webhooks.sql': |
     BEGIN;
       -- Create pg_net extension
       CREATE EXTENSION IF NOT EXISTS pg_net SCHEMA extensions;
@@ -248,7 +214,7 @@ data:
       REVOKE ALL ON FUNCTION supabase_functions.http_request() FROM PUBLIC;
       GRANT EXECUTE ON FUNCTION supabase_functions.http_request() TO postgres, anon, authenticated, service_role;
     COMMIT;
-  '99-roles.sql': |
+  '00099-roles.sql': |
     -- NOTE: change to your own passwords for production environments
     \set pgpass `echo "$POSTGRES_PASSWORD"`
 
@@ -257,9 +223,78 @@ data:
     ALTER USER supabase_auth_admin WITH PASSWORD :'pgpass';
     ALTER USER supabase_functions_admin WITH PASSWORD :'pgpass';
     ALTER USER supabase_storage_admin WITH PASSWORD :'pgpass';
-  '99-jwt.sql': |
+  '00099-jwt.sql': |
     \set jwt_secret `echo "$JWT_SECRET"`
     \set jwt_exp `echo "$JWT_EXP"`
 
     ALTER DATABASE postgres SET "app.settings.jwt_secret" TO :'jwt_secret';
     ALTER DATABASE postgres SET "app.settings.jwt_exp" TO :'jwt_exp';
+  '10099-realtime.sql': |
+    \set pguser `echo "$POSTGRES_USER"`
+
+    create schema if not exists _realtime;
+    alter schema _realtime owner to :pguser;
+
+  '10097-_supabase.sql': |
+    \set pguser `echo "$POSTGRES_USER"`
+
+    CREATE DATABASE _supabase WITH OWNER :pguser;
+
+  '10099-logs.sql': |
+    \set pguser `echo "$POSTGRES_USER"`
+
+    \c _supabase
+    create schema if not exists _analytics;
+    alter schema _analytics owner to :pguser;
+    \c postgres
+
+  '10099-pooler.sql': |
+    \set pguser `echo "$POSTGRES_USER"`
+
+    \c _supabase
+    create schema if not exists _supavisor;
+    alter schema _supavisor owner to :pguser;
+    \c postgres
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "supachart.db.fullname" . }}-init-scripts
+spec:
+  activeDeadlineSeconds: 3600
+  backoffLimit: 6
+  template:
+    spec:
+      automountServiceAccountToken: false
+      restartPolicy: OnFailure
+      containers:
+        - name: seed
+          image: {{ .Values.db.deployment.image }}
+          command:
+            - sh
+            - -c
+            - |
+              echo "Waiting for DB to be ready..."
+              until pg_isready -h "{{ include "supachart.db.fullname" . }}" -p "{{ .Values.db.service.port }}" -U "supabase_admin"; do
+                sleep 2
+              done
+              echo "DB is up, running seeds..."
+              for f in /seed/*.sql; do
+                echo "Running $f"
+                psql "postgresql://supabase_admin:$DB_PASS@$DB_URL/$DB_NAME" -f "$f"
+              done
+          env:
+            {{- include "supachart.env" (dict "name" "DB_PASS"           "path" .Values.db.password ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "DB_NAME"           "path" .Values.db.database ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "JWT_SECRET"        "path" .Values.auth.jwt.secret ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "JWT_EXP"           "path" .Values.auth.jwt.expiry ) | nindent 12 }}
+            {{- include "supachart.env" (dict "name" "POSTGRES_PASSWORD" "path" .Values.db.password ) | nindent 12 }}
+            - name: DB_URL
+              value: "{{ include "supachart.db.fullname" . }}:{{ .Values.db.service.port }}"
+          volumeMounts:
+            - name: seed-sql
+              mountPath: /seed
+      volumes:
+        - name: seed-sql
+          configMap:
+            name: {{ include "supachart.db.fullname" . }}-init-scripts
